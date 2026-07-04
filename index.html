@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LoFi Rider — v7 · sprites cuits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="menu">
+  <div class="eyebrow">v7 · fabrique d'assets · monde cohérent</div>
+  <h1>LoFi <span class="accent">Rider</span></h1>
+  <p class="tagline">Chaque arbre est peint une fois, puis le monde défile.</p>
+  <div id="dropZone">
+    <p><strong>Glisse un morceau ici</strong> (MP3, WAV…)<br>ou clique pour parcourir</p>
+    <input type="file" id="fileInput" accept="audio/*" hidden>
+    <div class="btnRow">
+      <button class="primary" id="genBtn">Rouler sur le morceau de test</button>
+    </div>
+  </div>
+  <div id="status"></div>
+</div>
+
+<div id="hud">
+  <div id="trackInfo"></div>
+  <div id="timecode">0:00</div>
+  <div id="hint">Saute les trous · attrape les notes dorées — ESPACE · ← → posture</div>
+  <div id="progress"><div class="bar"></div><div class="fill"></div></div>
+  <div class="touchBtn" id="leanBackBtn">↺</div>
+  <div class="touchBtn" id="leanFwdBtn">↻</div>
+  <div class="touchBtn" id="jumpBtn">↑</div>
+  <div id="endCard">
+    <h2>Voyage terminé</h2>
+    <p id="endStats"></p>
+    <div class="btnRow">
+      <button class="primary" id="againBtn">Refaire la descente</button>
+      <button id="menuBtn">Changer de morceau</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+
+</body>
+</html>

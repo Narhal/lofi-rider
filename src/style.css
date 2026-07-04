@@ -1,0 +1,41 @@
+:root{
+  --night:#16131F;--night-deep:#0E0C16;--ink:#07070B;
+  --scarf:#FF6B4A;--text:#EDE9F2;--muted:#8F87A3;
+  --panel:rgba(255,255,255,0.045);--panel-border:rgba(255,255,255,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--night);color:var(--text);font-family:'Bricolage Grotesque',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+#game{position:fixed;inset:0;display:block;touch-action:none}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:radial-gradient(ellipse at 50% 120%, #3A2A60 0%, var(--night) 62%)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+#menu h1{font-size:clamp(48px,9vw,86px);font-weight:750;letter-spacing:-0.02em;margin:8px 0 4px}
+#menu h1 .accent{color:var(--scarf)}
+#menu .tagline{color:var(--muted);font-weight:350;font-size:16px;margin-bottom:34px;text-align:center;padding:0 24px}
+#dropZone{border:1.5px dashed rgba(255,255,255,0.18);border-radius:16px;padding:30px 40px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;max-width:480px;margin:0 20px}
+#dropZone.dragover{border-color:var(--scarf);background:rgba(255,107,74,0.06)}
+#dropZone p{color:var(--muted);font-size:15px;line-height:1.5}
+#dropZone strong{color:var(--text)}
+.btnRow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+button{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:600;padding:12px 24px;border-radius:999px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);cursor:pointer;transition:transform .12s,background .2s}
+button:hover{background:rgba(255,255,255,0.09)}
+button:active{transform:scale(.97)}
+button.primary{background:var(--scarf);border-color:var(--scarf);color:var(--ink)}
+button.primary:hover{background:#FF7F62}
+button:focus-visible{outline:2px solid var(--scarf);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+#status{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:18px;min-height:16px;text-align:center}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5;display:none}
+#trackInfo{position:absolute;top:16px;left:20px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,238,244,.82);text-shadow:0 0 7px rgba(190,220,255,.45),1px 0 0 rgba(255,60,90,.4),-1px 0 0 rgba(60,255,230,.4)}
+#timecode{position:absolute;top:16px;right:20px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:rgba(240,238,244,.82);text-shadow:0 0 7px rgba(190,220,255,.45),1px 0 0 rgba(255,60,90,.4),-1px 0 0 rgba(60,255,230,.4)}
+#progress{position:absolute;bottom:0;left:0;right:0;height:14px;cursor:pointer;pointer-events:auto}
+#progress .bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.12)}
+#progress .fill{position:absolute;bottom:0;left:0;height:3px;background:var(--scarf);width:0%}
+#hint{position:absolute;bottom:34px;width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;color:rgba(237,233,242,.7);transition:opacity 1.2s}
+#endCard{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,7,11,.45);backdrop-filter:blur(3px);pointer-events:auto}
+#endCard h2{font-size:34px;font-weight:700;margin-bottom:6px}
+#endCard p{color:var(--muted);margin-bottom:22px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-align:center;line-height:1.9}
+.touchBtn{position:absolute;bottom:26px;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(237,233,242,.7);font-size:22px;display:none;align-items:center;justify-content:center;pointer-events:auto;user-select:none;-webkit-user-select:none}
+#leanBackBtn{left:22px}
+#leanFwdBtn{left:110px}
+#jumpBtn{right:22px;background:rgba(255,107,74,.16);border-color:rgba(255,107,74,.4)}
+@media (pointer:coarse){.touchBtn{display:flex}#hint{bottom:118px}}
