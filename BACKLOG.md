@@ -4,9 +4,13 @@
 - [ ] **Catalogue d'assets enrichi** (render/assets.js) : plus de détail par arbre
       (marge dispo : la cuisson est gratuite au runtime), buissons, rochers,
       torii, enseignes de ville cuites, variantes de poteaux.
-- [ ] **Fonds peints Midjourney** : créer `render/backdrops.js` — chargement des
-      PNG par biome, défilement parallax lent, raccord en miroir ping-pong,
-      crossfade entre biomes. (N4 fournit les PNG, prompts déjà calibrés.)
+- [x] **Fonds peints Midjourney** : `render/backdrops.js` — auto-découverte des
+      PNG par biome (import.meta.glob), parallax lent, ping-pong miroir, crossfade
+      entre biomes. Branché dans `render()` : remplace la couche de ciel (soleil/
+      étoiles/nuages coupés), garde les couches procédurales par-dessus.
+      Reste à faire : alléger les PNG (5–8 Mo pièce → resize ~2400px / WebP) ;
+      option crossfade quand deux sections voisines du même biome changent de
+      variante (actuellement coupe franche) ; réglage fin du calage vertical.
 
 ## M5 — le voyage complet
 - [ ] Pause (Échap) + écran de réglages (volume via GainNode, densité de trous

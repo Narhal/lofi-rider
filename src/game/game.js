@@ -2,6 +2,7 @@ import {AudioAnalyzer} from '../audio/analyzer.js';
 import {TestTrack} from '../audio/testTrack.js';
 import {LevelGenerator} from '../level/generator.js';
 import {AssetFactory} from '../render/assets.js';
+import {Backdrops} from '../render/backdrops.js';
 import {Palettes,BiomeTints,mix} from '../render/palettes.js';
 import {GRAV_UP,GRAV_DOWN,JUMP_V,ANGVEL_MAX,LEAN_TORQUE,ANG_DAMP,ZOOM_DESKTOP,ZOOM_MOBILE,SPEED_MIN,SPEED_MAX} from '../config/mapping.js';
 
@@ -18,6 +19,7 @@ function resize(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
 resize();addEventListener('resize',resize);
+Backdrops.preload();   // décode les fonds peints dès le menu (prêts avant la descente)
 
 let audioCtx=null,buffer=null,timeline=null,level=null,trackName='';
 let source=null,analyserLive=null,liveData=null;
@@ -573,12 +575,17 @@ function render(playT){
   sky.addColorStop(0,pal[0]);sky.addColorStop(0.55,pal[1]);sky.addColorStop(1,pal[2]);
   ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
 
+  // Fond peint : remplace la couche de ciel (soleil, étoiles, nuages) quand il est prêt.
+  // Le dégradé ci-dessus sert de fallback tant que les images se chargent.
+  const bdReady=Backdrops.ready(biomes,secIdx);
+  if(bdReady)Backdrops.draw(ctx,biomes,secIdx,W,H,cam.x);
+
   ctx.save();
   ctx.scale(zoomCur,zoomCur);
   ctx.translate(0,camKick);
 
   const calm=1-e;
-  if(calm>0.35){
+  if(!bdReady&&calm>0.35){
     const sa=(calm-0.35)*1.1;
     for(let i=0;i<34;i++){
       let s=(i*2246822519)>>>0;s=(s^(s>>>15))>>>0;
@@ -589,18 +596,21 @@ function render(playT){
     }
   }
 
-  const sunX=Wv*0.62,sunY=Hv*0.30,sunR=Hv*0.16;
-  const glow=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*2.6);
-  glow.addColorStop(0,'rgba(255,214,178,0.40)');glow.addColorStop(1,'rgba(255,214,178,0)');
-  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(sunX,sunY,sunR*2.6,0,7);ctx.fill();
-  // disque bandé cuit : les fentes sont transparentes, le ciel passe au travers
-  const sR=sunR*(1+kp*0.02+pulse*0.02);
-  ctx.save();ctx.globalAlpha=0.92+kp*0.06;
-  ctx.drawImage(AssetFactory.getSun(),sunX-sR,sunY-sR,sR*2,sR*2);
-  ctx.restore();
-  if(aF>0.1)drawGodRays(sunX,sunY,aF,now);
+  // Soleil bandé + god rays : uniquement en fallback (le fond peint a son propre astre).
+  if(!bdReady){
+    const sunX=Wv*0.62,sunY=Hv*0.30,sunR=Hv*0.16;
+    const glow=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*2.6);
+    glow.addColorStop(0,'rgba(255,214,178,0.40)');glow.addColorStop(1,'rgba(255,214,178,0)');
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(sunX,sunY,sunR*2.6,0,7);ctx.fill();
+    // disque bandé cuit : les fentes sont transparentes, le ciel passe au travers
+    const sR=sunR*(1+kp*0.02+pulse*0.02);
+    ctx.save();ctx.globalAlpha=0.92+kp*0.06;
+    ctx.drawImage(AssetFactory.getSun(),sunX-sR,sunY-sR,sR*2,sR*2);
+    ctx.restore();
+    if(aF>0.1)drawGodRays(sunX,sunY,aF,now);
+  }
 
-  for(let i=0;i<4;i++){
+  if(!bdReady)for(let i=0;i<4;i++){
     let s=((i*40503+7)*2654435761)>>>0;
     const cw=46+(s%40);
     const cx=(((s%1000)/1000*(Wv+240)+now*0.001*(6+i*3)-cam.x*0.05)%(Wv+240)+(Wv+240))%(Wv+240)-120;
