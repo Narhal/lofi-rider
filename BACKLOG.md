@@ -1,5 +1,21 @@
 # Backlog LoFi Rider
 
+## Direction artistique actée avec N4 (2026-07-05)
+Pitch : « un souvenir d'anime 90's encré à la main, hanté par les esprits du
+morceau ». Trois axes retenus : encre & trames manga (Dandadan/Denshattack!),
+VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
+- [x] **Prototype vertical validé sur screenshots** : trame manga cuite dans la
+      végétation (règle : nature = tramée, structures = aplat d'encre),
+      onomatopées à ressort sur gros impacts (ドンッ/ズドンッ, ゴシャッ au miss),
+      impact frame négative 0,07 s.
+- [ ] **Généralisation encre** : bords de pinceau irréguliers sur les sprites,
+      rehauts blancs cassés sur le rider, lignes de vitesse manga à haute
+      énergie, onomatopées supplémentaires (grands vols ゴゴゴ, perfects).
+- [ ] **VHS diégétique** : rembobinage visuel au seek, tracking damage au miss,
+      cartes « éclair pub » aux changements de section, sous-titres fansub.
+- [ ] **Esprits du son** : les orbes deviennent des petits yokai animés,
+      waveform gravée dans le terrain, câbles des poteaux en portées.
+
 ## v8 — priorités actées avec N4
 - [x] **Catalogue d'assets enrichi** (render/assets.js) : 6 espèces d'arbres
       (conifère, feuillu, peuplier, + érable en dôme avec trouées de lumière,

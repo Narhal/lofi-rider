@@ -797,6 +797,24 @@ export function render(playT){
   ctx.closePath();ctx.fill();
   ctx.restore();
 
+  // Onomatopée manga : pop à ressort, encre blanche cernée de noir
+  if(fx.impactWord){
+    const w2=fx.impactWord;
+    const k=w2.t/0.8;
+    const pop=1+0.55*Math.exp(-w2.t*9)*Math.cos(w2.t*26);
+    ctx.save();
+    ctx.translate(w2.x-cam.x,w2.y-cam.y-10-k*14);
+    ctx.rotate(-0.10+k*0.03);
+    ctx.scale(pop,pop);
+    ctx.font='900 26px "Bricolage Grotesque","Hiragino Sans","Yu Gothic",sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.globalAlpha=1-k*k*k;
+    ctx.lineWidth=5;ctx.lineJoin='round';
+    ctx.strokeStyle='#07070B';ctx.strokeText(w2.txt,0,0);
+    ctx.fillStyle='#EDE9F2';ctx.fillText(w2.txt,0,0);
+    ctx.restore();
+  }
+
   const pc=Math.round(highLv*26);
   for(let i=0;i<pc;i++){
     let s=(i*1274126177)>>>0;s=(s^(s>>>11))>>>0;
@@ -872,5 +890,14 @@ export function render(playT){
       ctx.fillStyle=`rgba(225,225,235,${0.14*g2})`;
       ctx.fillRect(0,ty,W,6);
     }
+  }
+
+  // Impact frame : négatif plein écran une fraction de seconde (gros impacts)
+  if(fx.impactFrameT>0){
+    ctx.save();
+    ctx.globalCompositeOperation='difference';
+    ctx.fillStyle='#EDE9F2';
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
   }
 }

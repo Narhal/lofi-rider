@@ -35,6 +35,8 @@ export const G={
   state:'menu',   // menu | riding | paused | ended
 
   /* effets & timers de rendu */
-  fx:{particles:[],rings:[],flashT:0,wobbleT:0,fadeT:0,hitstopT:0,camKick:0,glitchT:0},
+  fx:{particles:[],rings:[],flashT:0,wobbleT:0,fadeT:0,hitstopT:0,camKick:0,glitchT:0,
+    impactWord:null,     // {txt,x,y,t} — onomatopée manga en cours
+    impactFrameT:0},     // flash négatif d'une fraction de seconde (impact frame)
   kickIdx:0,lastSecIdx:-1,
 };

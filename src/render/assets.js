@@ -14,6 +14,23 @@ const AssetFactory=(()=>{
       g.beginPath();g.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d*squash,rr,0,7);g.fill();
     }
   }
+  /* Trame manga : le ton plat devient un pattern à points transparents.
+     Règle DA : la NATURE est tramée (le fond respire au travers),
+     les STRUCTURES (torii, poteaux, enseignes) restent en aplat d'encre. */
+  const inkTiles={};
+  function inkTone(g,tone){
+    let tile=inkTiles[tone];
+    if(!tile){
+      tile=document.createElement('canvas');tile.width=tile.height=6;
+      const t=tile.getContext('2d');
+      t.fillStyle=tone;t.fillRect(0,0,6,6);
+      t.globalCompositeOperation='destination-out';
+      t.beginPath();t.arc(1.5,1.5,1.15,0,7);t.fill();
+      t.beginPath();t.arc(4.5,4.5,1.15,0,7);t.fill();
+      inkTiles[tone]=tile;
+    }
+    return g.createPattern(tile,'repeat');
+  }
   // trous de lumière découpés dans la canopée (dappling)
   function dapple(g,cx,cy,R,n,rnd){
     g.save();g.globalCompositeOperation='destination-out';
@@ -30,7 +47,8 @@ const AssetFactory=(()=>{
     const cvT=document.createElement('canvas');cvT.width=Wd;cvT.height=H;
     const g=cvT.getContext('2d');
     const rnd=rng(seed*7919+species*104729);
-    g.fillStyle=tone;g.strokeStyle=tone;g.lineCap='round';
+    const ink=inkTone(g,tone);
+    g.fillStyle=ink;g.strokeStyle=ink;g.lineCap='round';
     const bx=Wd/2,by=H-1;
     if(species===0){ // conifère : étages de touffes tombantes
       g.beginPath();g.moveTo(bx-7,by);g.lineTo(bx-2.5,by-H*0.3);g.lineTo(bx+2.5,by-H*0.3);g.lineTo(bx+7,by);g.closePath();g.fill();
@@ -210,7 +228,7 @@ const AssetFactory=(()=>{
     const cvT=document.createElement('canvas');cvT.width=Wd;cvT.height=H;
     const g=cvT.getContext('2d');
     const rnd=rng(variant*31337+7);
-    g.fillStyle=tone;
+    g.fillStyle=inkTone(g,tone);
     const by=H-1,bx=Wd/2;
     const lobes=2+(variant%3);
     for(let l=0;l<lobes;l++){
@@ -235,7 +253,7 @@ const AssetFactory=(()=>{
     const cvT=document.createElement('canvas');cvT.width=Wd;cvT.height=H;
     const g=cvT.getContext('2d');
     const rnd=rng(variant*8887+3);
-    g.fillStyle=tone;
+    g.fillStyle=inkTone(g,tone);
     const by=H-1;
     // gros galets fusionnés : la silhouette bosselée se lit « rocher » d'emblée.
     // Un bloc dominant décentré + épaulements → chaque variante a son profil.
@@ -373,7 +391,8 @@ const AssetFactory=(()=>{
     const cvT=document.createElement('canvas');cvT.width=Wd;cvT.height=H;
     const g=cvT.getContext('2d');
     const rnd=rng(variant*2609+17);
-    g.strokeStyle=tone;g.fillStyle=tone;g.lineCap='round';
+    const ink=inkTone(g,tone);
+    g.strokeStyle=ink;g.fillStyle=ink;g.lineCap='round';
     const bx=Wd/2,by=H-1;
     const n=9+(variant%3)*2;
     for(let i=0;i<n;i++){

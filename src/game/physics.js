@@ -46,7 +46,12 @@ function land(playT){
   // POIDS : squash, secousse caméra, poussière, hitstop
   r.squash=Math.min(1,impact/1000);
   fx.camKick=Math.min(16,impact*0.014);
-  if(heavy){fx.hitstopT=0.055;fx.glitchT=Math.max(fx.glitchT,0.28);}
+  if(heavy){
+    fx.hitstopT=0.055;fx.glitchT=Math.max(fx.glitchT,0.28);
+    // langage manga : onomatopée + impact frame négative
+    fx.impactWord={txt:impact>950?'ズドンッ':'ドンッ',x:r.x,y:r.y-18,t:0};
+    fx.impactFrameT=0.07;
+  }
   if(Math.abs(d)<0.55){
     fx.flashT=0.35;
     burst(r.x,r.y+9,heavy?22:12,'#FF6B4A',heavy?1.5:1);
@@ -124,6 +129,7 @@ export function stepPhysics(dt,playT){
       if(r.y>ref+260){
         if(g)g.missed=true;
         r.misses++;fx.fadeT=0.7;fx.glitchT=Math.max(fx.glitchT,0.55);
+        fx.impactWord={txt:'ゴシャッ…',x:r.x,y:r.y-30,t:0};
         const nx=g?g.x1+26:r.x+40;
         r.x=nx;r.y=L.heightAt(nx)-10;r.vy=0;
         r.grounded=true;r.angle=Math.atan(L.slopeAt(nx));r.angVel=0;r.airTime=0;
@@ -164,6 +170,8 @@ export function stepPhysics(dt,playT){
     p.vy+=900*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
   }
   for(let i=fx.rings.length-1;i>=0;i--){fx.rings[i].t+=dt;if(fx.rings[i].t>0.6)fx.rings.splice(i,1);}
+  if(fx.impactWord){fx.impactWord.t+=dt;if(fx.impactWord.t>0.8)fx.impactWord=null;}
+  if(fx.impactFrameT>0)fx.impactFrameT-=dt;
   if(fx.flashT>0)fx.flashT-=dt;
   if(fx.fadeT>0)fx.fadeT-=dt;
 }
