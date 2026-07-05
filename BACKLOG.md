@@ -74,7 +74,11 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
 - [ ] Morceau tutoriel libre de droit : pistes identifiées — HoliznaCC0 (CC0,
       Free Music Archive), Pixabay Music (licence libre usage commercial),
       connecteur Splice disponible dans le registre MCP.
-- [ ] Écran titre final + crédits.
+- [x] Écran titre final + crédits (v0.9.0) : scène vivante rendue derrière le
+      panneau translucide (fond peint plaine en dérive lente, colline d'encre,
+      torii au seuil, arbres tramés, susuki, 3 hitodama en maraude, VHS avec
+      micro-glitchs), sous-titre ロファイ・ライダー, ligne de crédits.
+      drawVHS() et drawSpirit() factorisés (partagés descente/menu).
 
 ## Dette technique
 - [x] Découper game.js en state.js (état partagé G) / playback.js / physics.js /

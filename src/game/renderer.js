@@ -86,6 +86,72 @@ noiseCv.width=160;noiseCv.height=160;
    im.data[i]=v;im.data[i+1]=v;im.data[i+2]=v;im.data[i+3]=Math.random()<0.5?18:0;}
  nc.putImageData(im,0,0);}
 
+/* Couche VHS (scanlines, bruit, aberration, glitch) — partagée entre la
+   descente et l'écran titre */
+function drawVHS(now,glitchT){
+  const {ctx,cv,W,H,DPR}=G;
+  if(!scanPat)scanPat=ctx.createPattern(scanCv,'repeat');
+  ctx.save();
+  ctx.globalAlpha=0.22;
+  ctx.fillStyle=scanPat;ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=glitchT>0?0.13:0.08;
+  const nx2=(Math.random()*160)|0,ny2=(Math.random()*160)|0;
+  for(let ox=-nx2;ox<W;ox+=160)for(let oy=-ny2;oy<H;oy+=160)ctx.drawImage(noiseCv,ox,oy);
+  ctx.restore();
+  ctx.globalCompositeOperation='screen';
+  ctx.fillStyle='rgba(255,40,80,0.022)';ctx.fillRect(1.2,0,W,H);
+  ctx.fillStyle='rgba(40,255,220,0.022)';ctx.fillRect(-1.2,0,W,H);
+  ctx.globalCompositeOperation='source-over';
+  if(glitchT>0){
+    const g2=Math.min(1,glitchT*2);
+    const bands=3+((now/60)|0)%3;
+    for(let i=0;i<bands;i++){
+      const y=((Math.sin(now*0.011+i*13.7)*0.5+0.5)*H)|0;
+      const bh=6+((now/30+i*7)|0)%26;
+      const dx=(Math.sin(now*0.02+i*31)*20*g2)|0;
+      try{ctx.drawImage(cv,0,y*DPR,W*DPR,bh*DPR,dx,y,W,bh);}catch(err){}
+    }
+    ctx.globalCompositeOperation='screen';
+    ctx.fillStyle=`rgba(255,40,80,${0.08*g2})`;ctx.fillRect(3,0,W,H);
+    ctx.fillStyle=`rgba(40,255,220,${0.08*g2})`;ctx.fillRect(-3,0,W,H);
+    ctx.globalCompositeOperation='source-over';
+    if(g2>0.4){
+      const ty=H-16-((now*0.35)%26);
+      ctx.fillStyle=`rgba(225,225,235,${0.14*g2})`;
+      ctx.fillRect(0,ty,W,6);
+    }
+  }
+}
+
+/* Esprit du son (hitodama) : corps-goutte, queue frémissante, yeux d'encre
+   qui clignent et regardent vers gazeAng */
+function drawSpirit(sx,sy,seed,now,gazeAng){
+  const {ctx}=G;
+  const og=ctx.createRadialGradient(sx,sy,0,sx,sy,12);
+  og.addColorStop(0,'rgba(255,224,150,0.75)');og.addColorStop(1,'rgba(255,224,150,0)');
+  ctx.fillStyle=og;ctx.beginPath();ctx.arc(sx,sy,12,0,7);ctx.fill();
+  ctx.save();
+  ctx.translate(sx,sy);
+  ctx.rotate(Math.sin(now*0.0025+seed)*0.14);
+  const tl=8+Math.sin(now*0.012+seed)*2.2;
+  ctx.fillStyle='rgba(255,242,206,0.95)';
+  ctx.beginPath();
+  ctx.arc(0,0,3.6,Math.PI*0.42,Math.PI*1.58);
+  ctx.quadraticCurveTo(tl*0.55,-3.4+Math.sin(now*0.017+seed)*1.4,tl,-4.5);
+  ctx.quadraticCurveTo(tl*0.45,1.2,0,3.6);
+  ctx.closePath();ctx.fill();
+  const blink=((now*0.0004+seed*0.13)%1)<0.05;
+  ctx.fillStyle='#141222';
+  if(blink){
+    ctx.fillRect(-2.6,-0.9,1.6,0.7);ctx.fillRect(-0.2,-0.9,1.6,0.7);
+  }else{
+    const ex=Math.cos(gazeAng)*0.55,ey=Math.sin(gazeAng)*0.55;
+    ctx.beginPath();ctx.arc(-1.8+ex,-0.6+ey,0.75,0,7);ctx.fill();
+    ctx.beginPath();ctx.arc(0.6+ex,-0.6+ey,0.75,0,7);ctx.fill();
+  }
+  ctx.restore();
+}
+
 function biomesAt(playT){
   const S=G.level.secBiomes,FADE=2.2;
   for(let i=0;i<S.length;i++){
@@ -487,6 +553,62 @@ function drawNearAccent(tr,sx,gy,a,now){
   }
 }
 
+/* ---------- Écran titre : la plaine au crépuscule, hantée ---------- */
+let menuGlitch=0,lastMenuNow=0;
+export function renderMenu(now){
+  const {ctx,W,H}=G;
+  const dt=lastMenuNow?Math.min(0.05,(now-lastMenuNow)/1000):0.016;
+  lastMenuNow=now;
+  const pal=Palettes[0];
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,pal[0]);sky.addColorStop(0.55,pal[1]);sky.addColorStop(1,pal[2]);
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  const biomes=[{b:'plaine',a:1}];
+  const bd=Backdrops.ready(biomes,0);
+  if(bd)Backdrops.draw(ctx,biomes,0,W,H,now*0.018);   // dérive lente du fond peint
+  const z=Math.max(1.4,Math.min(2.2,W/640));
+  const Wv=W/z,Hv=H/z;
+  ctx.save();ctx.scale(z,z);
+  if(!bd){
+    const sunX=Wv*0.62,sunY=Hv*0.30,sR=Hv*0.16;
+    ctx.save();ctx.globalAlpha=0.92;
+    ctx.drawImage(AssetFactory.getSun(),sunX-sR,sunY-sR,sR*2,sR*2);
+    ctx.restore();
+  }
+  // colline d'encre
+  const yG=x=>Hv*0.80-Math.sin(x*0.006+0.8)*8-Math.sin(x*0.0021)*14;
+  ctx.fillStyle='#07070B';
+  ctx.beginPath();ctx.moveTo(-4,Hv+20);
+  for(let x=-4;x<=Wv+4;x+=6)ctx.lineTo(x,yG(x));
+  ctx.lineTo(Wv+4,Hv+20);ctx.closePath();ctx.fill();
+  // torii au seuil du voyage, arbres tramés aux lisières
+  const th=Hv*0.30,tw2=th*(240/260);
+  ctx.drawImage(AssetFactory.getTorii('rgb(7,6,14)'),Wv*0.72-tw2/2,yG(Wv*0.72)-th+th*0.05,tw2,th);
+  blitTree(Wv*0.10,yG(Wv*0.10)+2,Hv*0.44,23,'rgb(10,8,20)',0.95,now,'plaine');
+  blitTree(Wv*0.93,yG(Wv*0.93)+2,Hv*0.32,41,'rgb(10,8,20)',0.9,now,'plaine');
+  {
+    const gh=Hv*0.07,gw=gh*(160/140);
+    ctx.drawImage(AssetFactory.getGrass(1,'rgb(7,6,14)'),Wv*0.32-gw/2,yG(Wv*0.32)-gh+2,gw,gh);
+    ctx.drawImage(AssetFactory.getGrass(3,'rgb(7,6,14)'),Wv*0.55-gw/2,yG(Wv*0.55)-gh+2,gw,gh);
+    const bh2=Hv*0.06,bw2=bh2*(200/120);
+    ctx.drawImage(AssetFactory.getBush(2,'rgb(9,7,18)'),Wv*0.80-bw2/2,yG(Wv*0.80)-bh2+2,bw2,bh2);
+  }
+  // trois esprits en maraude, regard vagabond
+  for(let i=0;i<3;i++){
+    const hx=Wv*(0.24+0.24*i)+Math.sin(now*0.00035+i*2.1)*Wv*0.05;
+    const hy=Hv*(0.40+0.06*Math.sin(now*0.0005+i*1.7));
+    drawSpirit(hx,hy,i*37,now,Math.sin(now*0.0008+i)*0.9+Math.PI*0.8);
+  }
+  ctx.restore();
+  // vignette + VHS
+  const vg=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*1.05);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.40)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  if(menuGlitch>0)menuGlitch=Math.max(0,menuGlitch-dt);
+  else if(Math.random()<dt*0.10)menuGlitch=0.14;
+  drawVHS(now,menuGlitch);
+}
+
 export function render(playT){
   const {ctx,cv,W,H,DPR,cam,rider,level,timeline,fx}=G;
   const now=performance.now();
@@ -754,38 +876,13 @@ export function render(playT){
     ctx.beginPath();ctx.moveTo(sx-4,y-14);ctx.lineTo(sx-4,y-4);ctx.stroke();
   }
 
-  // ORBES → petits esprits du son (hitodama) : corps-goutte, queue de
-  // flamme qui frémit, yeux d'encre qui clignent
+  // ORBES → petits esprits du son (hitodama), leur regard suit le rider
   for(const o of level.orbs){
     const sx=o.x-cam.x;
     if(sx<-30||sx>Wv+30||o.got)continue;
     const oy=o.y-cam.y+Math.sin(now*0.004+o.x)*4;
-    const og=ctx.createRadialGradient(sx,oy,0,sx,oy,12);
-    og.addColorStop(0,'rgba(255,224,150,0.75)');og.addColorStop(1,'rgba(255,224,150,0)');
-    ctx.fillStyle=og;ctx.beginPath();ctx.arc(sx,oy,12,0,7);ctx.fill();
-    ctx.save();
-    ctx.translate(sx,oy);
-    ctx.rotate(Math.sin(now*0.0025+o.x)*0.14);
-    // corps + queue traînant vers l'arrière-haut
-    const tl=8+Math.sin(now*0.012+o.x)*2.2;
-    ctx.fillStyle='rgba(255,242,206,0.95)';
-    ctx.beginPath();
-    ctx.arc(0,0,3.6,Math.PI*0.42,Math.PI*1.58);
-    ctx.quadraticCurveTo(tl*0.55,-3.4+Math.sin(now*0.017+o.x)*1.4,tl,-4.5);
-    ctx.quadraticCurveTo(tl*0.45,1.2,0,3.6);
-    ctx.closePath();ctx.fill();
-    // yeux : deux points d'encre qui SUIVENT le rider, clignement périodique
-    const blink=((now*0.0004+o.x*0.13)%1)<0.05;
-    ctx.fillStyle='#141222';
-    if(blink){
-      ctx.fillRect(-2.6,-0.9,1.6,0.7);ctx.fillRect(-0.2,-0.9,1.6,0.7);
-    }else{
-      const gaze=Math.atan2((rider.y-cam.y)-oy,(rider.x-cam.x)-sx);
-      const ex=Math.cos(gaze)*0.55,ey=Math.sin(gaze)*0.55;
-      ctx.beginPath();ctx.arc(-1.8+ex,-0.6+ey,0.75,0,7);ctx.fill();
-      ctx.beginPath();ctx.arc(0.6+ex,-0.6+ey,0.75,0,7);ctx.fill();
-    }
-    ctx.restore();
+    const gaze=Math.atan2((rider.y-cam.y)-oy,(rider.x-cam.x)-sx);
+    drawSpirit(sx,oy,o.x,now,gaze);
   }
 
   for(const p of fx.particles){
@@ -1083,37 +1180,7 @@ export function render(playT){
   }
 
   /* === Couche VHS === */
-  if(!scanPat)scanPat=ctx.createPattern(scanCv,'repeat');
-  ctx.save();
-  ctx.globalAlpha=0.22;
-  ctx.fillStyle=scanPat;ctx.fillRect(0,0,W,H);
-  ctx.globalAlpha=fx.glitchT>0?0.13:0.08;
-  const nx2=(Math.random()*160)|0,ny2=(Math.random()*160)|0;
-  for(let ox=-nx2;ox<W;ox+=160)for(let oy=-ny2;oy<H;oy+=160)ctx.drawImage(noiseCv,ox,oy);
-  ctx.restore();
-  ctx.globalCompositeOperation='screen';
-  ctx.fillStyle='rgba(255,40,80,0.022)';ctx.fillRect(1.2,0,W,H);
-  ctx.fillStyle='rgba(40,255,220,0.022)';ctx.fillRect(-1.2,0,W,H);
-  ctx.globalCompositeOperation='source-over';
-  if(fx.glitchT>0){
-    const g2=Math.min(1,fx.glitchT*2);
-    const bands=3+((now/60)|0)%3;
-    for(let i=0;i<bands;i++){
-      const y=((Math.sin(now*0.011+i*13.7)*0.5+0.5)*H)|0;
-      const bh=6+((now/30+i*7)|0)%26;
-      const dx=(Math.sin(now*0.02+i*31)*20*g2)|0;
-      try{ctx.drawImage(cv,0,y*DPR,W*DPR,bh*DPR,dx,y,W,bh);}catch(err){}
-    }
-    ctx.globalCompositeOperation='screen';
-    ctx.fillStyle=`rgba(255,40,80,${0.08*g2})`;ctx.fillRect(3,0,W,H);
-    ctx.fillStyle=`rgba(40,255,220,${0.08*g2})`;ctx.fillRect(-3,0,W,H);
-    ctx.globalCompositeOperation='source-over';
-    if(g2>0.4){
-      const ty=H-16-((now*0.35)%26);
-      ctx.fillStyle=`rgba(225,225,235,${0.14*g2})`;
-      ctx.fillRect(0,ty,W,6);
-    }
-  }
+  drawVHS(now,fx.glitchT);
 
   // Tracking damage : au miss, la bande se froisse — barre de bruit qui roule
   if(fx.fadeT>0){

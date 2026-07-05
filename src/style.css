@@ -6,9 +6,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--night);color:var(--text);font-family:'Bricolage Grotesque',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
 #game{position:fixed;inset:0;display:block;touch-action:none}
-#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:radial-gradient(ellipse at 50% 120%, #3A2A60 0%, var(--night) 62%)}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;background:radial-gradient(ellipse at 50% 118%, rgba(58,42,96,0.42) 0%, rgba(14,12,22,0.55) 58%, rgba(10,9,16,0.72) 100%)}
+.jpTitle{font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.55em;color:var(--scarf);margin:-2px 0 6px;text-indent:.55em;text-shadow:0 0 10px rgba(255,107,74,.35)}
+#credits{position:absolute;bottom:16px;width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;color:rgba(143,135,163,.75)}
 .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-#menu h1{font-size:clamp(48px,9vw,86px);font-weight:750;letter-spacing:-0.02em;margin:8px 0 4px}
+#menu h1{font-size:clamp(48px,9vw,86px);font-weight:750;letter-spacing:-0.02em;margin:8px 0 4px;text-shadow:0 2px 24px rgba(7,7,11,.65)}
 #menu h1 .accent{color:var(--scarf)}
 #menu .tagline{color:var(--muted);font-weight:350;font-size:16px;margin-bottom:34px;text-align:center;padding:0 24px}
 #dropZone{border:1.5px dashed rgba(255,255,255,0.18);border-radius:16px;padding:30px 40px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;max-width:480px;margin:0 20px}

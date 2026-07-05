@@ -15,7 +15,7 @@ import {FRAME_SCALE} from '../config/mapping.js';
 import {G} from './state.js';
 import {ensureCtx,play,pause,currentT} from './playback.js';
 import {resetRiderAt,stepPhysics,stepEnding} from './physics.js';
-import {resize,stepCamera,render} from './renderer.js';
+import {resize,stepCamera,render,renderMenu} from './renderer.js';
 import * as ui from './ui.js';
 
 export function startGame(){
@@ -144,6 +144,8 @@ function loop(now){
     render(t);
     if(G.fx.glitchT>0)G.fx.glitchT=Math.max(0,G.fx.glitchT-dt);
     if(G.ending.doneT>0.65)endRide();
+  }else if(G.state==='menu'){
+    renderMenu(now);   // écran titre vivant derrière le panneau du menu
   }
   requestAnimationFrame(loop);
 }
