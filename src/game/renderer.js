@@ -403,29 +403,34 @@ function drawNearAccent(tr,sx,gy,a,now){
     }
   }else if(tr.big){
     if(tr.kind==='foret'&&s%17===0){
-      // torii : porte sacrée au bord du chemin, rare
+      // torii : porte sacrée au bord du chemin, rare — d'aplomb, base enterrée
       const h=Hv*0.40+(s%12);
       const w=h*(240/260);
       ctx.save();ctx.globalAlpha=0.92*a;
-      ctx.drawImage(AssetFactory.getTorii(TONE),sx-w/2,gy-h+h*0.02,w,h);
+      ctx.drawImage(AssetFactory.getTorii(TONE),sx-w/2,gy-h+h*0.06,w,h);
       ctx.restore();
     }else{
       const h=Hv*(0.52+(s%30)/100);
       blitTree(sx,gy,h,s,TONE,0.9*a,now,tr.kind);
     }
   }else{
+    // sprites larges à fond plat : on les couche sur la PENTE + enfoncement
+    // franc, sinon le côté aval flotte au-dessus du sol
+    const slope=Math.atan(G.level.slopeAt(tr.x));
     const pick=s%9;
     if(pick===0){
       const h=Hv*(0.09+(s%7)/100*2);
       const w=h*(200/120);
-      ctx.save();ctx.globalAlpha=0.85*a;
-      ctx.drawImage(AssetFactory.getBush(s%5,TONE),sx-w/2,gy-h+h*0.05,w,h);
+      ctx.save();ctx.translate(sx,gy);ctx.rotate(slope);
+      ctx.globalAlpha=0.85*a;
+      ctx.drawImage(AssetFactory.getBush(s%5,TONE),-w/2,-h+h*0.12,w,h);
       ctx.restore();
     }else if(pick===4){
       const h=Hv*(0.07+(s%8)/100*1.6);
       const w=h*(200/140);
-      ctx.save();ctx.globalAlpha=0.88*a;
-      ctx.drawImage(AssetFactory.getRock(s%5,TONE),sx-w/2,gy-h+h*0.04,w,h);
+      ctx.save();ctx.translate(sx,gy);ctx.rotate(slope*0.7);
+      ctx.globalAlpha=0.88*a;
+      ctx.drawImage(AssetFactory.getRock(s%5,TONE),-w/2,-h+h*0.12,w,h);
       ctx.restore();
     }else if(tr.kind==='foret'&&pick===7){
       const h=Hv*(0.13+(s%5)/100);
@@ -433,9 +438,9 @@ function drawNearAccent(tr,sx,gy,a,now){
       // lueur chaude dans le foyer, aperçue à travers les fenêtres découpées
       const gl2=0.5+0.25*Math.sin(now*0.003+s);
       ctx.fillStyle=`rgba(255,196,120,${0.35*gl2*a})`;
-      ctx.fillRect(sx-w*0.20,gy-h*0.64,w*0.40,h*0.26);
+      ctx.fillRect(sx-w*0.20,gy-h*0.60,w*0.40,h*0.26);
       ctx.save();ctx.globalAlpha=0.9*a;
-      ctx.drawImage(AssetFactory.getLantern(TONE),sx-w/2,gy-h+h*0.03,w,h);
+      ctx.drawImage(AssetFactory.getLantern(TONE),sx-w/2,gy-h+h*0.08,w,h);
       ctx.restore();
     }else{
       const h=Hv*(0.28+(s%20)/100);
