@@ -263,22 +263,49 @@ function drawPoles(aPV,now){
   let prev=null;
   for(const p of level.poles){
     const sx=p.x-cam.x;
-    if(sx<-140){prev=null;continue;}
-    if(sx>Wv+140)break;
+    // les FILS se dessinent même quand leurs poteaux sont hors champ
+    // (l'espacement des poteaux dépasse la largeur d'écran)
+    if(sx<-1100){prev=null;continue;}
+    if(sx>Wv+1100)break;
     const gy=level.heightAt(p.x)-cam.y;
     const h=Hv*0.44+((p.seed%20)-10);
-    const img=AssetFactory.getPole(p.seed%4,'rgb(10,9,20)');
     const w=h*(90/240);
-    ctx.save();ctx.globalAlpha=0.9*aPV;
-    ctx.drawImage(img,sx-w/2,gy-h,w,h);
-    ctx.restore();
+    if(sx>-140&&sx<Wv+140){
+      const img=AssetFactory.getPole(p.seed%4,'rgb(10,9,20)');
+      ctx.save();ctx.globalAlpha=0.9*aPV;
+      ctx.drawImage(img,sx-w/2,gy-h,w,h);
+      ctx.restore();
+    }
     const topY=gy-h+h*0.07;
     if(prev){
-      ctx.lineWidth=1.1;ctx.strokeStyle=`rgba(7,7,12,${0.7*aPV})`;
-      for(const dy of[0,h*0.075]){
+      // portée musicale : cinq câbles serrés, une note posée dessus par-ci par-là
+      ctx.lineWidth=0.85;ctx.strokeStyle=`rgba(7,7,12,${0.6*aPV})`;
+      for(let li=0;li<5;li++){
+        const dy=li*3.4;
         const y1=prev.topY+dy,y2=topY+dy;
         const mx=(prev.sx+sx)/2,my=Math.max(y1,y2)+14;
         ctx.beginPath();ctx.moveTo(prev.sx,y1);ctx.quadraticCurveTo(mx,my,sx,y2);ctx.stroke();
+      }
+      const s2=(p.seed*48271)%2147483647;
+      if(s2%3!==0){
+        const u=0.28+(s2%1000)/1000*0.44;
+        const li=s2%5,dy=li*3.4;
+        const y1=prev.topY+dy,y2=topY+dy;
+        const mx=(prev.sx+sx)/2,my=Math.max(y1,y2)+14;
+        // point sur la caténaire quadratique au paramètre u
+        const iu=1-u;
+        const nx=iu*iu*prev.sx+2*iu*u*mx+u*u*sx;
+        const ny=iu*iu*y1+2*iu*u*my+u*u*y2;
+        ctx.save();ctx.globalAlpha=0.75*aPV;
+        ctx.fillStyle='rgb(7,7,12)';ctx.strokeStyle='rgb(7,7,12)';
+        ctx.beginPath();ctx.ellipse(nx,ny-1,2.5,1.9,-0.35,0,7);ctx.fill();
+        ctx.lineWidth=1.1;
+        ctx.beginPath();ctx.moveTo(nx+2.3,ny-1.6);ctx.lineTo(nx+2.3,ny-9.5);ctx.stroke();
+        if(s2%2===0){
+          ctx.beginPath();ctx.moveTo(nx+2.3,ny-9.5);
+          ctx.quadraticCurveTo(nx+6.5,ny-8,nx+5.4,ny-4.5);ctx.stroke();
+        }
+        ctx.restore();
       }
     }
     prev={sx,topY};
@@ -669,6 +696,27 @@ export function render(playT){
     }
   }
   if(open){ctx.lineTo(Wv+8,Hv+60);ctx.closePath();ctx.fill();}
+
+  // Waveform gravée : deux sillons sous la surface, l'amplitude suit le
+  // morceau — la montagne avoue qu'elle est la chanson.
+  // (Les mouchetures « pinceau sec » sur la crête ont été essayées puis
+  // retirées : elles se détachaient en débris sur le ciel clair.)
+  {
+    const playX=level.xOfT(playT);
+    for(const[dy,band,col]of[[13,timeline.rms,'rgba(196,164,206,0.13)'],[24,timeline.bass,'rgba(150,130,170,0.09)']]){
+      ctx.strokeStyle=col;ctx.lineWidth=1;
+      ctx.beginPath();let started=false;
+      for(let sx=-8;sx<=Wv+8;sx+=5){
+        const wx=cam.x+sx;
+        if(level.inGap(wx)){started=false;continue;}
+        const tA=playT+(wx-playX)/level.speedAt(wx);
+        const amp=lvl(band,Math.max(0,Math.min(timeline.duration,tA)));
+        const y=level.heightAt(wx)-cam.y+dy+Math.sin(wx*1.4)*amp*7;
+        if(!started){ctx.moveTo(sx,y);started=true;}else ctx.lineTo(sx,y);
+      }
+      ctx.stroke();
+    }
+  }
 
   {
     const g=nearestGapAhead(rider.x,level.speedAt(rider.x)*1.1);

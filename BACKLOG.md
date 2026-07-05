@@ -23,9 +23,15 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
       fansub (« PART Ⅱ ・ 夜の街 », jaune canonique sous les scanlines).
 - [x] **Esprits du son (noyau)** : les orbes sont des hitodama — corps-goutte,
       queue de flamme qui frémit, yeux d'encre qui clignent.
-- [ ] **DA restant** : waveform gravée dans le terrain, câbles des poteaux en
-      portées, bords de pinceau sur les sprites cuits, onomatopée des perfects,
-      éclair pub plein écran optionnel entre les sections.
+- [x] **Synesthésie (noyau)** : waveform gravée dans le terrain (deux sillons
+      dont l'amplitude suit rms/bass), câbles des poteaux en portée musicale
+      (5 fils + croches posées dessus, fils dessinés même poteaux hors champ),
+      onomatopée ピタッ sur les sauts parfaits.
+      Essayé puis retiré : mouchetures « pinceau sec » sur la crête (débris
+      visibles sur ciel clair). Les bords de pinceau sur sprites cuits restent
+      une piste, non concluante à ce stade.
+- [ ] **DA restant (optionnel)** : éclair pub plein écran entre les sections,
+      yokai « réveillés » par le passage du rider (regard qui suit).
 
 ## v8 — priorités actées avec N4
 - [x] **Catalogue d'assets enrichi** (render/assets.js) : 6 espèces d'arbres

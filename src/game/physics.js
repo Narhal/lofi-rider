@@ -99,7 +99,10 @@ export function stepPhysics(dt,playT){
           r.grounded=false;r.vy=JUMP_V;r.angVel=0;r.airStartX=r.x;r.airTime=0;
           r.jumps++;
           const g=nearestGapAhead(r.x,L.speedAt(r.x)*0.5);
-          if(g&&Math.abs(playT-g.ts)<0.12){r.perfects++;fx.rings.push({x:r.x,y:r.y,t:0});}
+          if(g&&Math.abs(playT-g.ts)<0.12){
+            r.perfects++;fx.rings.push({x:r.x,y:r.y,t:0});
+            fx.impactWord={txt:'ピタッ',x:r.x,y:r.y-26,t:0};   // saut dans le tempo
+          }
           burst(r.x,r.y+8,6,'rgba(237,233,242,0.5)');
         }
       }
