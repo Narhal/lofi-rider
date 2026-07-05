@@ -1,9 +1,14 @@
-# LoFi Rider
+# LoFi Rider · ロファイ・ライダー
+
+**▶ Jouer : https://narhal.github.io/play-lofi-rider/** — glissez un MP3/WAV
+sur l'écran titre, ou lancez le morceau de test. ESPACE pour sauter,
+← → pour la posture, Échap pour la pause. Retours de test bienvenus en issue.
 
 Jeu contemplatif à défilement horizontal : le morceau que vous chargez devient
 la montagne que vous descendez. Snares → trous à sauter en rythme, hi-hats →
-rideau d'arbres, leads → notes à attraper, kicks → pulsations du monde,
-énergie → pente et vitesse. DA anime 90's + VHS.
+rideau d'arbres, leads → esprits du son à attraper, kicks → pulsations du
+monde, énergie → pente et vitesse. DA anime 90's : encre & trames manga,
+VHS diégétique, yokai.
 
 ## Démarrer
 
