@@ -1,9 +1,15 @@
 # Backlog LoFi Rider
 
 ## v8 — priorités actées avec N4
-- [ ] **Catalogue d'assets enrichi** (render/assets.js) : plus de détail par arbre
-      (marge dispo : la cuisson est gratuite au runtime), buissons, rochers,
-      torii, enseignes de ville cuites, variantes de poteaux.
+- [x] **Catalogue d'assets enrichi** (render/assets.js) : 6 espèces d'arbres
+      (conifère, feuillu, peuplier, + érable en dôme avec trouées de lumière,
+      pin japonais à plateaux, saule pleureur), espèces biaisées par biome
+      (TREE_SETS dans game.js) ; buissons (5 var.), rochers galets fusionnés
+      (5 var.), torii (rare, rideau proche + contre-jour), lanterne tōrō
+      (foyer lumineux à travers fenêtres découpées), enseignes néon cuites
+      (glyphes découpés, halo pulsé derrière — même technique que le soleil),
+      graminées susuki (4 var.), 4 poteaux distincts (bois/béton+lampadaire/
+      télécom/distribution).
 - [x] **Fonds peints Midjourney** : `render/backdrops.js` — auto-découverte des
       PNG par biome (import.meta.glob), parallax lent, ping-pong miroir, crossfade
       entre biomes. Branché dans `render()` : remplace la couche de ciel (soleil/

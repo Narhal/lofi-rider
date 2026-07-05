@@ -312,8 +312,12 @@ function biomesAt(playT){
 }
 
 
-function blitTree(sx,gy,h,seed,tone,alpha,now){
-  const sp2=seed%3,vr=(seed>>2)%4;
+/* Espèces par biome : forêt = conifères/pins, plaine = feuillus variés,
+   ville = arbres d'alignement clairsemés */
+const TREE_SETS={foret:[0,4,0,1,4,0],plaine:[1,2,3,5,2,3],ville:[3,2,3,2]};
+function blitTree(sx,gy,h,seed,tone,alpha,now,kind){
+  const set=TREE_SETS[kind]||TREE_SETS.plaine;
+  const sp2=set[seed%set.length],vr=(seed>>2)%4;
   const img=AssetFactory.getTree(sp2,vr,tone);
   const w=h*(240/260);
   ctx.save();
@@ -500,24 +504,49 @@ function drawGroundCover(){
 }
 /* Accents d'AVANT-plan (≈20% de la production, pur noir) */
 function drawAccent(tr,sx,a,now){
-  const sway=Math.sin(now/500+tr.seed)*2;
+  const s=tr.seed,INK2='rgb(4,4,8)';
+  const sway=Math.sin(now/500+s)*2;
   if(tr.kind==='foret'||(tr.kind==='plaine'&&tr.big)){
-    const h=Hv*(tr.big?0.72+(tr.seed%23)/100:0.34+(tr.seed%22)/100);
-    blitTree(sx+sway*0.3,Hv+8,h,tr.seed,'rgb(4,4,8)',(tr.big?0.97:0.9)*a,now);
+    if(tr.kind==='foret'&&tr.big&&s%13===0){
+      // torii en contre-jour total : le ciel passe sous le linteau
+      const h=Hv*(0.60+(s%15)/100);
+      const w=h*(240/260);
+      ctx.save();ctx.globalAlpha=0.96*a;
+      ctx.drawImage(AssetFactory.getTorii(INK2),sx-w/2,Hv+8-h,w,h);
+      ctx.restore();
+    }else{
+      const h=Hv*(tr.big?0.72+(s%23)/100:0.34+(s%22)/100);
+      blitTree(sx+sway*0.3,Hv+8,h,s,INK2,(tr.big?0.97:0.9)*a,now,tr.kind);
+    }
   }else if(tr.kind==='plaine'){
-    ctx.strokeStyle=`rgba(4,4,9,${0.85*a})`;ctx.lineCap='round';
-    if(tr.seed%2===0){
+    const pick=s%5;
+    if(pick===3){
+      // touffe de susuki cuite, à contre-jour
+      const h=Hv*(0.10+(s%6)/100*1.5);
+      const w=h*(160/140);
+      ctx.save();ctx.globalAlpha=0.9*a;
+      ctx.drawImage(AssetFactory.getGrass(s%4,INK2),sx-w/2,Hv+6-h,w,h);
+      ctx.restore();
+    }else if(pick===4){
+      const h=Hv*(0.06+(s%5)/100);
+      const w=h*(200/140);
+      ctx.save();ctx.globalAlpha=0.92*a;
+      ctx.drawImage(AssetFactory.getRock(s%5,INK2),sx-w/2,Hv+6-h,w,h);
+      ctx.restore();
+    }else if(pick%2===0){
+      ctx.strokeStyle=`rgba(4,4,9,${0.85*a})`;ctx.lineCap='round';
       ctx.lineWidth=2.6;
-      const h2=16+(tr.seed%10);
+      const h2=16+(s%10);
       ctx.beginPath();ctx.moveTo(sx,Hv+6);ctx.lineTo(sx,Hv+6-h2);ctx.stroke();
       ctx.lineWidth=1.8;
       ctx.beginPath();ctx.moveTo(sx-14,Hv+2-h2*0.55);ctx.lineTo(sx+14,Hv-h2*0.6);ctx.stroke();
     }else{
+      ctx.strokeStyle=`rgba(4,4,9,${0.85*a})`;ctx.lineCap='round';
       ctx.lineWidth=1.6;
       for(let b2=0;b2<4;b2++){
         const bx=sx+(b2-1.5)*3;
         ctx.beginPath();ctx.moveTo(bx,Hv+6);
-        ctx.quadraticCurveTo(bx+sway*0.6,Hv-4,(bx+(b2-1.5)*4)+sway,Hv-12-(tr.seed%8));
+        ctx.quadraticCurveTo(bx+sway*0.6,Hv-4,(bx+(b2-1.5)*4)+sway,Hv-12-(s%8));
         ctx.stroke();
       }
     }
@@ -525,13 +554,22 @@ function drawAccent(tr,sx,a,now){
     ctx.fillStyle=`rgba(3,3,7,${0.95*a})`;
     ctx.strokeStyle=`rgba(3,3,7,${0.95*a})`;
     if(tr.big){
-      const w2=9+(tr.seed%5);
-      ctx.fillRect(sx-w2/2,-(Hv*0.2),w2,Hv*1.5);
-      ctx.fillRect(sx-w2/2-16,Hv*0.10,w2+32,6);
-      ctx.fillRect(sx-w2/2-11,Hv*0.16,w2+22,5);
-      ctx.fillRect(sx+w2/2,Hv*0.20,12,16);
+      if(s%6===3){
+        // grande enseigne en contre-jour : les glyphes laissent voir le ciel
+        const h=Hv*(0.34+(s%10)/100);
+        const w=h*(100/240);
+        ctx.save();ctx.globalAlpha=0.95*a;
+        ctx.drawImage(AssetFactory.getSign(s%3,'rgb(3,3,7)'),sx-w/2,Hv+6-h,w,h);
+        ctx.restore();
+      }else{
+        const w2=9+(s%5);
+        ctx.fillRect(sx-w2/2,-(Hv*0.2),w2,Hv*1.5);
+        ctx.fillRect(sx-w2/2-16,Hv*0.10,w2+32,6);
+        ctx.fillRect(sx-w2/2-11,Hv*0.16,w2+22,5);
+        ctx.fillRect(sx+w2/2,Hv*0.20,12,16);
+      }
     }else{
-      const h2=30+(tr.seed%14);
+      const h2=30+(s%14);
       ctx.lineWidth=2.4;
       ctx.beginPath();ctx.moveTo(sx,Hv+6);ctx.lineTo(sx,Hv+6-h2);ctx.stroke();
       ctx.fillRect(sx-8,Hv-h2-6,16,11);
@@ -539,24 +577,68 @@ function drawAccent(tr,sx,a,now){
   }
 }
 /* Rideau PROCHE (la densité hi-hat vit ici, juste derrière le plan de jeu) */
+const NEON_RGB=['255,94,122','89,242,216','255,201,102'];
 function drawNearAccent(tr,sx,gy,a,now){
+  const s=tr.seed,TONE='rgb(14,12,26)';
   if(tr.kind==='ville'){
-    if(tr.seed%3===0){
-      const gl2=0.5+0.3*Math.sin(now*0.005+tr.seed);
-      ctx.fillStyle=`rgba(9,8,18,${0.85*a})`;
-      ctx.fillRect(sx-6,gy-26,12,26);
-      ctx.fillStyle=`rgba(150,220,255,${0.5*gl2*a})`;
-      ctx.fillRect(sx-4,gy-23,8,14);
+    if(s%5===0){
+      // enseigne néon cuite : le halo pulse DERRIÈRE, les glyphes découpés s'allument
+      const h=Hv*0.30+(s%14);
+      const w=h*(100/240);
+      const img=AssetFactory.getSign(s%3,'rgb(9,8,18)');
+      const B=AssetFactory.SIGN_BOARD;
+      const gl2=0.55+0.30*Math.sin(now*0.004+s);
+      ctx.fillStyle=`rgba(${NEON_RGB[s%3]},${0.40*gl2*a})`;
+      ctx.fillRect(sx-w/2+B.x0*w,gy-h+B.y0*h,(B.x1-B.x0)*w,(B.y1-B.y0)*h);
+      ctx.save();ctx.globalAlpha=0.9*a;
+      ctx.drawImage(img,sx-w/2,gy-h,w,h);ctx.restore();
     }else{
-      const h=Hv*0.36+(tr.seed%14);
-      const img=AssetFactory.getPole(tr.seed%4,'rgb(12,11,24)');
+      const h=Hv*0.36+(s%14);
+      const img=AssetFactory.getPole(s%4,'rgb(12,11,24)');
       const w=h*(90/240);
       ctx.save();ctx.globalAlpha=0.85*a;
       ctx.drawImage(img,sx-w/2,gy-h,w,h);ctx.restore();
     }
+  }else if(tr.big){
+    if(tr.kind==='foret'&&s%17===0){
+      // torii : porte sacrée au bord du chemin, rare
+      const h=Hv*0.40+(s%12);
+      const w=h*(240/260);
+      ctx.save();ctx.globalAlpha=0.92*a;
+      ctx.drawImage(AssetFactory.getTorii(TONE),sx-w/2,gy-h+h*0.02,w,h);
+      ctx.restore();
+    }else{
+      const h=Hv*(0.52+(s%30)/100);
+      blitTree(sx,gy,h,s,TONE,0.9*a,now,tr.kind);
+    }
   }else{
-    const h=Hv*(tr.big?0.52+(tr.seed%30)/100:0.28+(tr.seed%20)/100);
-    blitTree(sx,gy,h,tr.seed,'rgb(14,12,26)',(tr.big?0.9:0.8)*a,now);
+    const pick=s%9;
+    if(pick===0){
+      const h=Hv*(0.09+(s%7)/100*2);
+      const w=h*(200/120);
+      ctx.save();ctx.globalAlpha=0.85*a;
+      ctx.drawImage(AssetFactory.getBush(s%5,TONE),sx-w/2,gy-h+h*0.05,w,h);
+      ctx.restore();
+    }else if(pick===4){
+      const h=Hv*(0.07+(s%8)/100*1.6);
+      const w=h*(200/140);
+      ctx.save();ctx.globalAlpha=0.88*a;
+      ctx.drawImage(AssetFactory.getRock(s%5,TONE),sx-w/2,gy-h+h*0.04,w,h);
+      ctx.restore();
+    }else if(tr.kind==='foret'&&pick===7){
+      const h=Hv*(0.13+(s%5)/100);
+      const w=h*(120/200);
+      // lueur chaude dans le foyer, aperçue à travers les fenêtres découpées
+      const gl2=0.5+0.25*Math.sin(now*0.003+s);
+      ctx.fillStyle=`rgba(255,196,120,${0.35*gl2*a})`;
+      ctx.fillRect(sx-w*0.20,gy-h*0.64,w*0.40,h*0.26);
+      ctx.save();ctx.globalAlpha=0.9*a;
+      ctx.drawImage(AssetFactory.getLantern(TONE),sx-w/2,gy-h+h*0.03,w,h);
+      ctx.restore();
+    }else{
+      const h=Hv*(0.28+(s%20)/100);
+      blitTree(sx,gy,h,s,TONE,0.8*a,now,tr.kind);
+    }
   }
 }
 
