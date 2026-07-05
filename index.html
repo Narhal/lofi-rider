@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>LoFi Rider — v7 · sprites cuits</title>
+<title>LoFi Rider — v8 · fonds peints</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="icon" href="data:,">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <canvas id="game"></canvas>
 
 <div id="menu">
-  <div class="eyebrow">v7 · fabrique d'assets · monde cohérent</div>
+  <div class="eyebrow">v8 · fonds peints · pause & réglages</div>
   <h1>LoFi <span class="accent">Rider</span></h1>
   <p class="tagline">Chaque arbre est peint une fois, puis le monde défile.</p>
   <div id="dropZone">
@@ -29,11 +29,40 @@
 <div id="hud">
   <div id="trackInfo"></div>
   <div id="timecode">0:00</div>
-  <div id="hint">Saute les trous · attrape les notes dorées — ESPACE · ← → posture</div>
+  <div id="hint">Saute les trous · attrape les notes dorées — ESPACE · ← → posture · ÉCHAP pause</div>
   <div id="progress"><div class="bar"></div><div class="fill"></div></div>
   <div class="touchBtn" id="leanBackBtn">↺</div>
   <div class="touchBtn" id="leanFwdBtn">↻</div>
   <div class="touchBtn" id="jumpBtn">↑</div>
+  <div class="touchBtn" id="pauseBtn">❚❚</div>
+  <div id="pauseCard">
+    <h2>Pause</h2>
+    <div class="setRow">
+      <label for="volSlider">Volume</label>
+      <input type="range" id="volSlider" min="0" max="100" value="90">
+    </div>
+    <div class="setRow">
+      <label>Trous</label>
+      <div class="segRow" id="densRow">
+        <button class="seg" data-v="contemplatif">Contemplatif</button>
+        <button class="seg on" data-v="normal">Normal</button>
+        <button class="seg" data-v="rythme">Rythmé</button>
+      </div>
+    </div>
+    <div class="setRow">
+      <label>Cadrage</label>
+      <div class="segRow" id="frameRow">
+        <button class="seg" data-v="proche">Proche</button>
+        <button class="seg on" data-v="normal">Normal</button>
+        <button class="seg" data-v="large">Large</button>
+      </div>
+    </div>
+    <div class="btnRow">
+      <button class="primary" id="resumeBtn">Reprendre</button>
+      <button id="pauseMenuBtn">Changer de morceau</button>
+    </div>
+    <p class="pauseHint">Échap pour reprendre · la densité regénère la descente</p>
+  </div>
   <div id="endCard">
     <h2>Voyage terminé</h2>
     <p id="endStats"></p>

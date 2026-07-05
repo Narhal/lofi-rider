@@ -35,6 +35,17 @@ button:disabled{opacity:.4;cursor:default}
 #endCard h2{font-size:34px;font-weight:700;margin-bottom:6px}
 #endCard p{color:var(--muted);margin-bottom:22px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-align:center;line-height:1.9}
 .touchBtn{position:absolute;bottom:26px;width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:rgba(237,233,242,.7);font-size:22px;display:none;align-items:center;justify-content:center;pointer-events:auto;user-select:none;-webkit-user-select:none}
+#pauseBtn{bottom:auto;top:44px;right:16px;width:46px;height:46px;font-size:13px}
+#pauseCard{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(7,7,11,.55);backdrop-filter:blur(4px);pointer-events:auto}
+#pauseCard h2{font-size:34px;font-weight:700;margin-bottom:4px}
+.setRow{display:flex;align-items:center;gap:14px;min-width:min(430px,86vw)}
+.setRow label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);width:82px;text-align:right;flex:none}
+.setRow input[type=range]{flex:1;accent-color:var(--scarf)}
+.segRow{display:flex;gap:6px;flex:1}
+.seg{flex:1;padding:9px 6px;font-size:13px;font-weight:600;border-radius:10px}
+.seg.on{background:var(--scarf);border-color:var(--scarf);color:var(--ink)}
+.seg.on:hover{background:#FF7F62}
+.pauseHint{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--muted)}
 #leanBackBtn{left:22px}
 #leanFwdBtn{left:110px}
 #jumpBtn{right:22px;background:rgba(255,107,74,.16);border-color:rgba(255,107,74,.4)}

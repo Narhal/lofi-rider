@@ -1,4 +1,4 @@
-import {DT,STEP,SPEED_MIN,SPEED_MAX,GRADE_MIN,GRADE_MAX,JUMP_AIRTIME,GAP_FRACTION} from '../config/mapping.js';
+import {DT,STEP,SPEED_MIN,SPEED_MAX,GRADE_MIN,GRADE_MAX,JUMP_AIRTIME,GAP_FRACTION,GAP_DENSITY} from '../config/mapping.js';
 
 export /* ================================================================
    LEVEL GENERATOR v5
@@ -15,7 +15,8 @@ function percentile(sorted,p){return sorted[Math.min(sorted.length-1,Math.floor(
 const clamp01=v=>Math.min(1,Math.max(0,v));
 const smoothstep=v=>{v=clamp01(v);return v*v*(3-2*v);};
 
-function generate(tl){
+function generate(tl,opts){
+  const dens=GAP_DENSITY[(opts&&opts.density)||'normal']||GAP_DENSITY.normal;
   const dur=tl.duration,fr=tl.frameRate,frames=tl.rms.length;
   const win=Math.round(fr*2),smooth=new Float32Array(frames);let sum=0;
   for(let f=0;f<frames;f++){sum+=tl.rms[f];if(f>=win)sum-=tl.rms[f-win];smooth[f]=sum/Math.min(f+1,win);}
@@ -60,14 +61,14 @@ function generate(tl){
      Presque toutes les snares comptent : trou si l'espacement le
      permet (1.0–2.4 s selon l'énergie), sinon bosse rideable. */
   const sStr=[...tl.snareStr].sort((a,b)=>a-b);
-  const strThr=sStr.length?percentile(sStr,0.20):0;
+  const strThr=sStr.length?percentile(sStr,dens.strPct):0;
   const gapTimes=[],bumpTimes=[];
   let lastGapT=-99,lastBump=-99;
   for(let i=0;i<tl.snares.length;i++){
     const ts=tl.snares[i],e=eNorm(ts);
     if(ts<5||ts>dur-4)continue;
     if(tl.snareStr[i]<strThr)continue;
-    const gapOk=e>=0.18&&!inCalm(ts)&&ts-lastGapT>=Math.max(1.05,2.4-e*1.4);
+    const gapOk=e>=dens.thr&&!inCalm(ts)&&ts-lastGapT>=Math.max(1.05,2.4-e*1.4)*dens.spacing;
     if(gapOk){gapTimes.push(ts);lastGapT=ts;}
     else if(ts-lastBump>=0.35&&!inCalm(ts)){bumpTimes.push(ts);lastBump=ts;}
   }

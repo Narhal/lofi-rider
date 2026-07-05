@@ -24,3 +24,13 @@ export const ANG_DAMP=2.2;         // amortissement angulaire
 /* Cadrage */
 export const ZOOM_DESKTOP=2.3;
 export const ZOOM_MOBILE=1.7;
+export const FRAME_SCALE={proche:1.18,normal:1,large:0.84};  // réglage joueur (écran pause)
+
+/* Densité de trous (réglage joueur) : seuil d'énergie mini pour creuser un
+   trou, multiplicateur d'espacement entre trous, percentile de force des
+   snares retenues (plus bas = plus de snares deviennent des trous) */
+export const GAP_DENSITY={
+  contemplatif:{thr:0.34,spacing:1.8, strPct:0.35},
+  normal:      {thr:0.18,spacing:1,   strPct:0.20},
+  rythme:      {thr:0.10,spacing:0.65,strPct:0.05},
+};

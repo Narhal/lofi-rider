@@ -4,7 +4,7 @@ import {LevelGenerator} from '../level/generator.js';
 import {AssetFactory} from '../render/assets.js';
 import {Backdrops} from '../render/backdrops.js';
 import {Palettes,BiomeTints,mix} from '../render/palettes.js';
-import {GRAV_UP,GRAV_DOWN,JUMP_V,ANGVEL_MAX,LEAN_TORQUE,ANG_DAMP,ZOOM_DESKTOP,ZOOM_MOBILE,SPEED_MIN,SPEED_MAX} from '../config/mapping.js';
+import {GRAV_UP,GRAV_DOWN,JUMP_V,ANGVEL_MAX,LEAN_TORQUE,ANG_DAMP,ZOOM_DESKTOP,ZOOM_MOBILE,SPEED_MIN,SPEED_MAX,FRAME_SCALE} from '../config/mapping.js';
 
 export function startGame(){
 
@@ -22,8 +22,11 @@ resize();addEventListener('resize',resize);
 Backdrops.preload();   // décode les fonds peints dès le menu (prêts avant la descente)
 
 let audioCtx=null,buffer=null,timeline=null,level=null,trackName='';
-let source=null,analyserLive=null,liveData=null;
+let source=null,analyserLive=null,liveData=null,gainNode=null;
 let playing=false,startAt=0,offset=0,state='menu';
+
+/* Réglages joueur (écran pause) */
+const settings={volume:0.9,density:'normal',frame:'normal'};
 
 /* ---------- Rider : physique Trials + poids ---------- */
 const rider={x:0,y:0,vy:0,angle:0,angVel:0,grounded:true,airStartX:0,airTime:0,
@@ -42,6 +45,11 @@ function resetRiderAt(t){
 const input={jump:false};
 const keys={};
 addEventListener('keydown',e=>{
+  if(e.code==='Escape'){
+    if(state==='riding')openPause();
+    else if(state==='paused')resumePause();
+    return;
+  }
   if(state!=='riding')return;
   if(e.code==='Space'){e.preventDefault();if(!keys.Space)input.jump=true;keys.Space=true;}
   if(e.code==='ArrowLeft'||e.code==='KeyA')keys.L=true;
@@ -224,7 +232,7 @@ function stepCamera(dt,playT){
   // zoom dynamique : recule un peu à haute vitesse et pendant les grands vols
   const spN=(level.speedAt(rider.x)-SPEED_MIN)/(SPEED_MAX-SPEED_MIN);
   const airK=rider.airTime>0.35?0.94:1;
-  const target=ZOOM_BASE*(1-0.06*spN)*airK;
+  const target=ZOOM_BASE*FRAME_SCALE[settings.frame]*(1-0.06*spN)*airK;
   zoomCur+=(target-zoomCur)*Math.min(1,dt*3);
   Wv=W/zoomCur;Hv=H/zoomCur;
   const tx=rider.x-Wv*0.28;
@@ -991,7 +999,8 @@ function play(){
   source=audioCtx.createBufferSource();source.buffer=buffer;
   analyserLive=audioCtx.createAnalyser();analyserLive.fftSize=512;
   liveData=new Uint8Array(analyserLive.frequencyBinCount);
-  source.connect(analyserLive);analyserLive.connect(audioCtx.destination);
+  if(!gainNode){gainNode=audioCtx.createGain();gainNode.gain.value=settings.volume;gainNode.connect(audioCtx.destination);}
+  source.connect(analyserLive);analyserLive.connect(gainNode);
   source.start(0,offset);
   startAt=audioCtx.currentTime-offset;playing=true;
 }
@@ -1012,7 +1021,49 @@ function seek(t){
   Wv=W/zoomCur;Hv=H/zoomCur;
   cam.x=rider.x-Wv*0.28;cam.y=rider.y-Hv*0.44;
   if(was)play();
+  if(state==='paused')render(offset);   // rafraîchit l'image gelée sous l'overlay
 }
+
+/* ---------- Pause & réglages ---------- */
+function openPause(){
+  if(state!=='riding')return;
+  pause();state='paused';
+  $('pauseCard').style.display='flex';
+}
+function resumePause(){
+  if(state!=='paused')return;
+  $('pauseCard').style.display='none';
+  state='riding';lastT=performance.now();
+  play();
+}
+function applyDensity(d){
+  if(settings.density===d)return;
+  settings.density=d;
+  if(!timeline||!level)return;
+  level=LevelGenerator.generate(timeline,{density:d});
+  orbIdx=0;kickIdx=0;
+  resetRiderAt(offset);
+  cam.x=rider.x-Wv*0.28;cam.y=rider.y-Hv*0.44;
+  updateTrackInfo();
+  if(state==='paused')render(offset);
+}
+function bindSeg(id,fn){
+  $(id).querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{
+    $(id).querySelectorAll('.seg').forEach(x=>x.classList.toggle('on',x===b));
+    fn(b.dataset.v);
+  }));
+}
+bindSeg('densRow',applyDensity);
+bindSeg('frameRow',v=>{settings.frame=v;});
+$('volSlider').addEventListener('input',e=>{
+  settings.volume=e.target.value/100;
+  if(gainNode)gainNode.gain.value=settings.volume;
+});
+$('resumeBtn').addEventListener('click',resumePause);
+bindTouch('pauseBtn',()=>{
+  if(state==='riding')openPause();
+  else if(state==='paused')resumePause();
+});
 
 /* ---------- Boucle ---------- */
 let lastT=performance.now(),hintT=0;
@@ -1059,8 +1110,11 @@ async function loadArrayBuffer(ab,name){
   setStatus('Analyse… 0%');
   timeline=await AudioAnalyzer.analyze(buffer,p=>setStatus('Analyse… '+Math.round(p*100)+'%'));
   setStatus('Génération du niveau…');
-  level=LevelGenerator.generate(timeline);
+  level=LevelGenerator.generate(timeline,{density:settings.density});
   startRide();
+}
+function updateTrackInfo(){
+  $('trackInfo').textContent='▶ PLAY · '+trackName.toUpperCase()+' · '+timeline.bpm+' BPM · '+level.gaps.length+' TROUS · '+level.orbs.length+' NOTES · '+level.drops.length+' VOLS';
 }
 function startRide(){
   offset=0;kickIdx=0;lastSecIdx=-1;glitchT=0;orbIdx=0;
@@ -1068,12 +1122,13 @@ function startRide(){
   for(const o of level.orbs)o.got=false;
   rider.flips=0;rider.jumps=0;rider.perfects=0;rider.cleared=0;rider.misses=0;rider.bigAirs=0;rider.orbs=0;
   resetRiderAt(0.5);
-  zoomCur=ZOOM_BASE;Wv=W/zoomCur;Hv=H/zoomCur;
+  zoomCur=ZOOM_BASE*FRAME_SCALE[settings.frame];Wv=W/zoomCur;Hv=H/zoomCur;
   cam.x=rider.x-Wv*0.28;cam.y=rider.y-Hv*0.44;
   $('menu').style.display='none';
   $('hud').style.display='block';
   $('endCard').style.display='none';
-  $('trackInfo').textContent='▶ PLAY · '+trackName.toUpperCase()+' · '+timeline.bpm+' BPM · '+level.gaps.length+' TROUS · '+level.orbs.length+' NOTES · '+level.drops.length+' VOLS';
+  $('pauseCard').style.display='none';
+  updateTrackInfo();
   $('hint').style.opacity='1';hintT=0;
   state='riding';
   play();
@@ -1092,7 +1147,7 @@ $('genBtn').addEventListener('click',async e=>{
   trackName='Morceau lofi de test';
   setStatus('Analyse… 0%');
   timeline=await AudioAnalyzer.analyze(buffer,p=>setStatus('Analyse… '+Math.round(p*100)+'%'));
-  level=LevelGenerator.generate(timeline);
+  level=LevelGenerator.generate(timeline,{density:settings.density});
   startRide();
 });
 $('progress').addEventListener('click',e=>{
@@ -1101,10 +1156,13 @@ $('progress').addEventListener('click',e=>{
   seek((e.clientX-r.left)/r.width*timeline.duration);
 });
 $('againBtn').addEventListener('click',()=>startRide());
-$('menuBtn').addEventListener('click',()=>{
+function backToMenu(){
   pause();state='menu';
+  $('pauseCard').style.display='none';
   $('hud').style.display='none';$('menu').style.display='flex';
   setStatus('');
-});
+}
+$('menuBtn').addEventListener('click',backToMenu);
+$('pauseMenuBtn').addEventListener('click',backToMenu);
 
 }

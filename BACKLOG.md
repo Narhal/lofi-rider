@@ -13,8 +13,13 @@
       snap au seek). Reste : réglage fin du calage vertical (avis N4).
 
 ## M5 — le voyage complet
-- [ ] Pause (Échap) + écran de réglages (volume via GainNode, densité de trous
-      Contemplatif/Normal/Rythmé → regénération du niveau, taille de cadrage).
+- [x] Pause (Échap ou bouton tactile) + écran de réglages : volume (GainNode),
+      densité de trous Contemplatif/Normal/Rythmé (seuil d'énergie + espacement
+      + percentile de force des snares, cf. GAP_DENSITY dans mapping.js →
+      regénération du niveau à la volée), cadrage Proche/Normal/Large
+      (FRAME_SCALE). NB : sur le morceau de test, Rythmé ≈ Normal (toutes les
+      snares sont déjà des trous) ; la différence s'entend sur des morceaux
+      aux batteries denses.
 - [ ] Morceau tutoriel libre de droit : pistes identifiées — HoliznaCC0 (CC0,
       Free Music Archive), Pixabay Music (licence libre usage commercial),
       connecteur Splice disponible dans le registre MCP.
