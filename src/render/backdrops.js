@@ -36,6 +36,13 @@ function urlFor(biome,seed){
 }
 const seedForLayer=(secIdx,i)=>secIdx+i;   // couche entrante (i=1) = variante de la section suivante
 
+/* Fondu interne quand la couche de base change de variante SANS changer de
+   biome (sections voisines du même biome) : sinon la coupe est franche.
+   Au changement de biome l'URL ne saute pas (même seed de part et d'autre de
+   la frontière), donc ce fondu ne double pas le crossfade de biomesAt(). */
+const VARIANT_FADE=2.2;  // s
+const base={url:null,prevUrl:null,fade:1,lastNow:0};
+
 // Une scène pleine hauteur, répétée en miroir ping-pong pour couvrir [0,W].
 function drawScene(ctx,img,W,H,off,alpha){
   const scale=H/img.height, sw=img.width*scale;
@@ -63,6 +70,10 @@ export const Backdrops={
   /* Lance le chargement de toutes les images (à appeler tôt, ex. au menu). */
   preload(){for(const b in byBiome)for(const u of byBiome[b])get(u);},
 
+  /* Coupe net tout fondu de variante en cours (à appeler au seek :
+     le fond doit sauter avec le reste, le glitch masque la coupe). */
+  snap(){base.prevUrl=null;base.fade=1;},
+
   /* Toutes les variantes nécessaires à cette frame sont-elles décodées ?
      Tant que non, le moteur garde son ciel dégradé + soleil (fallback). */
   ready(biomes,secIdx){
@@ -77,11 +88,26 @@ export const Backdrops={
      Couche 0 (biome courant) opaque ; couches suivantes = crossfade entrant. */
   draw(ctx,biomes,secIdx,W,H,camX){
     const off=camX*PARALLAX;
+    const now=performance.now();
+    const dt=base.lastNow?Math.min(0.1,(now-base.lastNow)/1000):0;
+    base.lastNow=now;
     for(let i=0;i<biomes.length;i++){
       const u=urlFor(biomes[i].b,seedForLayer(secIdx,i));
       if(!u)continue;
       const e=get(u);if(!e.loaded)continue;
-      drawScene(ctx,e.img,W,H,off,i===0?1:biomes[i].a);
+      if(i===0){
+        if(u!==base.url){base.prevUrl=base.url;base.url=u;base.fade=base.prevUrl?0:1;}
+        base.fade=Math.min(1,base.fade+dt/VARIANT_FADE);
+        const pe=base.fade<1&&base.prevUrl?get(base.prevUrl):null;
+        if(pe&&pe.loaded){
+          drawScene(ctx,pe.img,W,H,off,1);
+          drawScene(ctx,e.img,W,H,off,base.fade);
+        }else{
+          drawScene(ctx,e.img,W,H,off,1);
+        }
+      }else{
+        drawScene(ctx,e.img,W,H,off,biomes[i].a);
+      }
     }
   }
 };

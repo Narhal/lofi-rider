@@ -1007,6 +1007,7 @@ function seek(t){
   const was=playing;pause();
   offset=Math.max(0,Math.min(timeline.duration-0.05,t));
   kickIdx=0;lastSecIdx=-1;glitchT=0.5;orbIdx=0;
+  Backdrops.snap();
   resetRiderAt(offset);
   Wv=W/zoomCur;Hv=H/zoomCur;
   cam.x=rider.x-Wv*0.28;cam.y=rider.y-Hv*0.44;

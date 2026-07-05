@@ -9,9 +9,8 @@
       entre biomes. Branché dans `render()` : remplace la couche de ciel (soleil/
       étoiles/nuages coupés), garde les couches procédurales par-dessus.
       Allégé : 9 scènes resize 2400px + WebP q82 (60,6 Mo → 2,8 Mo).
-      Reste à faire : option crossfade quand deux sections voisines du même
-      biome changent de variante (actuellement coupe franche) ; réglage fin
-      du calage vertical.
+      Crossfade de variantes intra-biome : fait (fondu 2,2 s dans backdrops.js,
+      snap au seek). Reste : réglage fin du calage vertical (avis N4).
 
 ## M5 — le voyage complet
 - [ ] Pause (Échap) + écran de réglages (volume via GainNode, densité de trous
