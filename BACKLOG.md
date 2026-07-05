@@ -8,9 +8,15 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
       végétation (règle : nature = tramée, structures = aplat d'encre),
       onomatopées à ressort sur gros impacts (ドンッ/ズドンッ, ゴシャッ au miss),
       impact frame négative 0,07 s.
-- [ ] **Généralisation encre** : bords de pinceau irréguliers sur les sprites,
-      rehauts blancs cassés sur le rider, lignes de vitesse manga à haute
-      énergie, onomatopées supplémentaires (grands vols ゴゴゴ, perfects).
+- [x] **Rider v2 + langage manga en mouvement** : hoodie oversize (pan
+      d'ourlet qui claque, capuche tassée derrière la nuque, cordons devant le
+      col avec embouts orange — l'arrière appartient à l'écharpe), tête nue à
+      épis + casque audio à coquille orange (écho de l'écharpe, lisible même
+      dézoommé), rehauts d'encre blanche (kira), ゴゴゴ tremblant pendant les
+      grands vols, lignes de vitesse manga effilées encre/blanc à pleine
+      énergie. Le flottement est piloté par vitesse + vol (windA/wob).
+- [ ] **Généralisation encre restante** : bords de pinceau irréguliers sur les
+      sprites cuits, onomatopées sur les perfects.
 - [ ] **VHS diégétique** : rembobinage visuel au seek, tracking damage au miss,
       cartes « éclair pub » aux changements de section, sous-titres fansub.
 - [ ] **Esprits du son** : les orbes deviennent des petits yokai animés,

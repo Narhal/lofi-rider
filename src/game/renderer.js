@@ -760,6 +760,10 @@ export function render(playT){
     ctx.strokeStyle=col;ctx.lineCap='round';ctx.lineWidth=2.2;
     ctx.beginPath();ctx.moveTo(shX,shY);ctx.lineTo(mx3+nx3*off3+ox,my3+ny3*off3+oy);ctx.lineTo(barX,barY);ctx.stroke();
   }
+  // vent : amplitude du flottement (vitesse + vol)
+  const spdN=(level.speedAt(rider.x)-SPEED_MIN)/(SPEED_MAX-SPEED_MIN);
+  const windA=0.6+spdN*0.8+(rider.grounded?0:1.1);
+  const wob=t=>Math.sin(now*0.014+t)*windA;
   leg(p2x,p2y,FARC);   // jambe arrière (gris : l'animation se lit)
   arm(FARC,0,0);       // bras arrière
   // cadre du vélo
@@ -776,26 +780,76 @@ export function render(playT){
   ctx.beginPath();ctx.moveTo(5.6,-2);ctx.lineTo(barX,barY);ctx.stroke();
   ctx.beginPath();ctx.moveTo(barX-1.2,barY);ctx.lineTo(barX+1.6,barY-1);ctx.stroke();
   ctx.fillStyle=INK;ctx.beginPath();ctx.arc(bbx,bby,1.7,0,7);ctx.fill();
-  // torse plein
+  // --- HOODIE oversize : pan arrière qui flotte, capuche tombée dans le dos ---
   ctx.fillStyle=INK;
+  // pan d'ourlet qui claque au vent, derrière la selle
   ctx.beginPath();
-  ctx.moveTo(hipX-1.6,hipY+1.2);
-  ctx.quadraticCurveTo(hipX+1.5+lp2,(hipY+shY)/2-2.4,shX+0.8,shY-0.6);
-  ctx.lineTo(shX+2.6,shY+1.4);
-  ctx.quadraticCurveTo(hipX+3.4+lp2,(hipY+shY)/2+2.2,hipX+2.2,hipY+2.4);
+  ctx.moveTo(hipX-1.8,hipY+2.2);
+  ctx.quadraticCurveTo(hipX-5-windA,hipY+3.2+wob(2)*0.7,hipX-7.5-windA*1.7,hipY+1.4+wob(1)*1.4);
+  ctx.quadraticCurveTo(hipX-4.5,hipY+4.6,hipX+0.5,hipY+4.0);
+  ctx.closePath();ctx.fill();
+  // torse ample (dos gonflé par le vent)
+  ctx.beginPath();
+  ctx.moveTo(hipX-2.2,hipY+2.6);
+  ctx.quadraticCurveTo(hipX-1+lp2+wob(0)*0.4,(hipY+shY)/2-4.6,shX+0.6,shY-1.2);
+  ctx.lineTo(shX+3.2,shY+1.2);
+  ctx.quadraticCurveTo(hipX+4.2+lp2,(hipY+shY)/2+3.0,hipX+3.0,hipY+2.8);
+  ctx.closePath();ctx.fill();
+  // capuche tombée, tassée derrière la nuque
+  ctx.beginPath();
+  ctx.moveTo(shX+0.4,shY-2.2);
+  ctx.quadraticCurveTo(shX-3.6+wob(3)*0.5,shY-4.0,shX-5.0,shY-0.6);
+  ctx.quadraticCurveTo(shX-2.6,shY+1.8,shX+0.8,shY+0.6);
   ctx.closePath();ctx.fill();
   leg(p1x,p1y,INK);    // jambe avant
   arm(INK,0.6,0.8);    // bras avant
-  // tête : crâne + casquette à visière
+  // tête nue : épis de cheveux (la nuque frémit au vent)
   const hx=shX+2.3,hy=shY-3.4;
   ctx.fillStyle=INK;
   ctx.beginPath();ctx.arc(hx,hy,3.1,0,7);ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(hx-2.2,hy-1.6);
-  ctx.quadraticCurveTo(hx+1.5,hy-4.4,hx+4.6,hy-1.3);
-  ctx.lineTo(hx+5.8,hy-0.6);ctx.lineTo(hx+3.2,hy-0.2);
-  ctx.closePath();ctx.fill();
+  ctx.strokeStyle=INK;ctx.lineCap='round';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(hx+2.4,hy-2.0);ctx.lineTo(hx+4.3,hy-3.2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(hx+1.0,hy-2.9);ctx.lineTo(hx+2.0,hy-4.7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(hx-2.5,hy-1.6);ctx.lineTo(hx-4.4+wob(5)*0.5,hy-2.8);ctx.stroke();
+  // casque audio (profil) : arceau + coquille orange, écho de l'écharpe
+  ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.arc(hx-0.2,hy-0.4,3.9,Math.PI*1.02,Math.PI*1.98);ctx.stroke();
+  ctx.fillStyle='#FF6B4A';
+  ctx.beginPath();ctx.arc(hx-0.5,hy+0.9,2.0,0,7);ctx.fill();
+  ctx.fillStyle=INK;
+  ctx.beginPath();ctx.arc(hx-0.5,hy+0.9,0.8,0,7);ctx.fill();
+  // cordons de capuche : ils pendent devant le col et fouettent sous le bras
+  // (l'arrière appartient à l'écharpe — on ne se marche pas dessus)
+  ctx.strokeStyle=INK;ctx.lineWidth=1.1;
+  for(const o of[0,1.3]){
+    ctx.beginPath();ctx.moveTo(shX+2.8,shY+1.4+o*0.4);
+    ctx.quadraticCurveTo(shX+2-windA*0.8,shY+4.5+o+wob(6+o)*0.8,shX-1.5-windA*1.8,shY+5.5+o*1.5+wob(4+o)*1.4);
+    ctx.stroke();
+  }
+  ctx.fillStyle='#FF6B4A';
+  ctx.fillRect(shX-2.3-windA*1.8,shY+5.2+wob(4)*1.4,1.3,1.3);
+  // rehauts d'encre blanche (kira) : capuche + arceau
+  ctx.strokeStyle='rgba(237,233,242,0.85)';ctx.lineWidth=0.9;
+  ctx.beginPath();ctx.moveTo(shX-3.0,shY-2.8);ctx.quadraticCurveTo(shX-0.8,shY-3.8,shX+1.0,shY-3.2);ctx.stroke();
+  ctx.beginPath();ctx.arc(hx-0.2,hy-0.5,3.6,Math.PI*1.25,Math.PI*1.55);ctx.stroke();
   ctx.restore();
+
+  // ゴゴゴ : la tension du grand vol, en colonne tremblante derrière le rider
+  if(!rider.grounded&&rider.airTime>0.45){
+    const gA=Math.min(1,(rider.airTime-0.45)*2.5);
+    ctx.font='900 15px "Bricolage Grotesque","Hiragino Sans","Yu Gothic",sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.lineJoin='round';
+    for(let i=0;i<3;i++){
+      const jx=Math.sin(now*0.05+i*2.2)*1.5;
+      ctx.globalAlpha=gA*(1-i*0.22);
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(237,233,242,0.9)';
+      ctx.strokeText('ゴ',rider.x-cam.x-26-i*7+jx,rider.y-cam.y-16-i*13);
+      ctx.fillStyle='#0B0A14';
+      ctx.fillText('ゴ',rider.x-cam.x-26-i*7+jx,rider.y-cam.y-16-i*13);
+    }
+    ctx.globalAlpha=1;
+  }
 
   // Onomatopée manga : pop à ressort, encre blanche cernée de noir
   if(fx.impactWord){
@@ -836,6 +890,20 @@ export function render(playT){
       const y=(now*0.05+i*97)%Hv;
       const x=Wv-((now*(0.9+spN)*0.9+i*230)%(Wv+140));
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+34+spN*44,y);ctx.stroke();
+    }
+  }
+  // lignes de vitesse manga : traits effilés encre/blanc, pleine énergie
+  if(spN>0.65){
+    const k=(spN-0.65)/0.35;
+    for(let i=0;i<7;i++){
+      let s=(i*2654435761+13)>>>0;s=(s^(s>>>9))>>>0;
+      const y=((s%1000)/1000)*Hv;
+      const len=(46+(s>>>10)%70)*(0.5+k);
+      const x=Wv-((now*(1.5+k)*0.9+i*260)%(Wv+len*2));
+      ctx.fillStyle=i%2?`rgba(11,10,20,${0.25*k})`:`rgba(237,233,242,${0.32*k})`;
+      ctx.beginPath();
+      ctx.moveTo(x+len,y);ctx.lineTo(x,y-1.2);ctx.lineTo(x,y+1.2);
+      ctx.closePath();ctx.fill();
     }
   }
 
