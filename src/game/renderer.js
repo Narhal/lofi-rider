@@ -633,10 +633,6 @@ export function render(playT){
     const BIO_JP={plaine:'野原',ville:'夜の街',foret:'森'};
     const bTo=biomes[biomes.length-1].b;
     fx.card={txt:'PART '+(ROM[secIdx]||secIdx+1)+' ・ '+(BIO_JP[bTo]||bTo),start:now};
-    // éclair pub (eyecatch) : SEULEMENT si aucun trou n'arrive — jamais
-    // au détriment d'un saut à faire
-    if(!nearestGapAhead(rider.x,level.speedAt(rider.x)*1.5))
-      fx.eyecatch={start:now};
   }
   G.lastSecIdx=secIdx;
 
@@ -1134,31 +1130,6 @@ export function render(playT){
   const vg=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*1.05);
   vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.40)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-
-  // Éclair pub (eyecatch) : carte titre d'une demi-seconde, trame en coin
-  if(fx.eyecatch){
-    const age=(now-fx.eyecatch.start)/1000;
-    if(age>0.55)fx.eyecatch=null;
-    else{
-      const aa=Math.max(0,Math.min(1,age/0.10,(0.55-age)/0.16));
-      ctx.save();
-      ctx.globalAlpha=aa;
-      ctx.fillStyle='#0B0A14';ctx.fillRect(0,0,W,H);
-      ctx.fillStyle='rgba(237,233,242,0.14)';
-      for(let dy2=0;dy2<H*0.38;dy2+=15)
-        for(let dx2=0;dx2<W*0.34-dy2*0.55;dx2+=15){
-          ctx.beginPath();ctx.arc(W-24-dx2,24+dy2,3.4,0,7);ctx.fill();
-        }
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillStyle='#EDE9F2';
-      ctx.font='800 36px "Bricolage Grotesque","Hiragino Sans","Yu Gothic",sans-serif';
-      ctx.fillText('ロファイ・ライダー',W/2,H/2-10);
-      ctx.fillStyle='#FF6B4A';
-      ctx.font='700 13px "IBM Plex Mono",monospace';
-      ctx.fillText('L O F I   R I D E R',W/2,H/2+22);
-      ctx.restore();
-    }
-  }
 
   // Carte de section fansub (sous la couche VHS : les scanlines la traversent)
   if(fx.card){

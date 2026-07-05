@@ -44,6 +44,9 @@ button:disabled{opacity:.4;cursor:default}
 .setRow label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);width:82px;text-align:right;flex:none}
 .setRow input[type=range]{flex:1;accent-color:var(--scarf)}
 .segRow{display:flex;gap:6px;flex:1}
+.menuSet{margin-top:16px;min-width:0}
+.menuSet label{width:auto;flex:none}
+.menuSet .seg{font-size:12px;padding:7px 10px;flex:none}
 .seg{flex:1;padding:9px 6px;font-size:13px;font-weight:600;border-radius:10px}
 .seg.on{background:var(--scarf);border-color:var(--scarf);color:var(--ink)}
 .seg.on:hover{background:#FF7F62}

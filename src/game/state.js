@@ -40,7 +40,6 @@ export const G={
     impactWord:null,     // {txt,x,y,t} — onomatopée manga en cours
     impactFrameT:0,      // flash négatif d'une fraction de seconde (impact frame)
     rewindT:0,rewindDir:'◀◀',  // rembobinage VHS diégétique (seek)
-    card:null,           // {txt,start} — carte de section façon fansub
-    eyecatch:null},      // {start} — éclair pub plein écran (si pas de trou devant)
+    card:null},          // {txt,start} — carte de section façon fansub
   kickIdx:0,lastSecIdx:-1,
 };

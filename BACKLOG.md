@@ -40,9 +40,12 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
       6 appâts piégés éliminés.
 - [x] **Torii bien assis** : les deux pieds vérifiés (pas de trou, dénivelé
       ≤ 12px) sinon repli en arbre ; posé sur le pied le plus bas.
-- [x] **Éclair pub** : carte titre plein écran 0,55 s (ロファイ・ライダー,
-      trame en coin) aux changements de section — UNIQUEMENT si aucun trou
-      n'arrive (jamais au détriment d'un saut).
+- [x] ~~Éclair pub~~ RETIRÉ après essai (retour N4 : « fausse bonne idée,
+      ça fait bizarre ») — la carte fansub discrète suffit à marquer les
+      sections. Ne pas re-proposer de coupure plein écran en cours de run.
+- [x] **Intensité réglable avant le départ** : sélecteur Contemplatif/Normal/
+      Rythmé sur l'écran titre, synchronisé avec celui de la pause
+      (ui.syncDensity — un seul réglage, deux endroits).
 - [x] **Yokai vivants** : leur regard suit le rider (pupilles décalées).
 
 ## v8 — priorités actées avec N4

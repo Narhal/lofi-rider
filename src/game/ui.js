@@ -59,6 +59,12 @@ function bindSeg(id,fn){
     fn(b.dataset.v);
   }));
 }
+/* La densité se règle depuis DEUX endroits (écran titre + pause) :
+   on reflète la valeur courante sur les deux rangées */
+export function syncDensity(){
+  for(const id of['menuDensRow','densRow'])
+    $(id).querySelectorAll('.seg').forEach(x=>x.classList.toggle('on',x.dataset.v===G.settings.density));
+}
 
 export function initUI(api){
   const {keys,input}=G;
@@ -88,8 +94,9 @@ export function initUI(api){
     else if(G.state==='paused')api.resumePause();
   });
 
-  /* --- écran pause --- */
-  bindSeg('densRow',api.applyDensity);
+  /* --- intensité : écran titre ET pause, même réglage --- */
+  bindSeg('menuDensRow',v=>{api.applyDensity(v);syncDensity();});
+  bindSeg('densRow',v=>{api.applyDensity(v);syncDensity();});
   bindSeg('frameRow',v=>{G.settings.frame=v;});
   $('volSlider').addEventListener('input',e=>setVolume(e.target.value/100));
   $('resumeBtn').addEventListener('click',api.resumePause);
