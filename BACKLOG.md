@@ -32,8 +32,11 @@
 - [ ] Écran titre final + crédits.
 
 ## Dette technique
-- [ ] Découper game.js (~1100 lignes) en physics.js / renderer.js / ui.js /
-      playback.js — le strangler pattern est en place, continuer.
+- [x] Découper game.js en state.js (état partagé G) / playback.js / physics.js /
+      renderer.js / ui.js — game.js n'est plus que l'orchestrateur (~150 lignes).
+      Convention : G.level et G.timeline sont réassignés, toujours lire via G.
+      Coût accepté : +12 Ko JS minifié (les propriétés de G ne se minifient pas
+      comme les variables de closure), 22,4 Ko gzip au total.
 - [ ] Perf mobile : profiler le rendu (skyline 3 couches + VHS), envisager
       un canvas offscreen pour les couches lentes.
 - [ ] Tests : golden tests de l'analyseur (BPM/sections sur fichiers de réf).

@@ -29,9 +29,15 @@ src/
 │                         biomes, rideau d'arbres, poteaux)
 ├── render/
 │   ├── palettes.js       Palettes de sections, teintes de biomes, utils couleur
-│   └── assets.js         Fabrique de sprites cuits (arbres, poteaux, soleil bandé)
-└── game/game.js          Physique du rider, caméra, rendu, boucle, UI
-                          (à découper en physics/renderer/ui — voir BACKLOG)
+│   ├── assets.js         Fabrique de sprites cuits (arbres, torii, enseignes…)
+│   └── backdrops.js      Fonds peints par biome (parallaxe, crossfade)
+└── game/
+    ├── state.js          L'état partagé G (singleton) — lu/écrit par tous
+    ├── playback.js       Transport audio (play/pause/seek, volume)
+    ├── physics.js        Rider (Trials + poids), orbes, particules
+    ├── renderer.js       Caméra, couches de fond, rider, couche VHS
+    ├── ui.js             DOM : menu, HUD, pause, entrées clavier/tactile
+    └── game.js           Orchestrateur : machine à états, chargement, boucle
 ```
 
 ## Contrats d'interface
