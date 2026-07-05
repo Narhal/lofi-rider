@@ -429,14 +429,25 @@ function drawNearAccent(tr,sx,gy,a,now){
       ctx.drawImage(img,sx-w/2,gy-h,w,h);ctx.restore();
     }
   }else if(tr.big){
+    let toriiOk=false;
     if(tr.kind==='foret'&&s%17===0){
-      // torii : porte sacrée au bord du chemin, rare — d'aplomb, base enterrée
+      // torii : porte sacrée au bord du chemin, rare — d'aplomb, base enterrée.
+      // Ses piliers sont larges : on exige les DEUX pieds sur un sol plat,
+      // sinon un pied pendrait dans le vide (trou, falaise) → repli en arbre.
       const h=Hv*0.40+(s%12);
       const w=h*(240/260);
-      ctx.save();ctx.globalAlpha=0.92*a;
-      ctx.drawImage(AssetFactory.getTorii(TONE),sx-w/2,gy-h+h*0.06,w,h);
-      ctx.restore();
-    }else{
+      const fw=w*0.31;
+      const L=G.level;
+      const hL=L.heightAt(tr.x-fw),hR=L.heightAt(tr.x+fw);
+      if(!L.inGap(tr.x-fw)&&!L.inGap(tr.x+fw)&&Math.abs(hL-hR)<=12){
+        const gyT=gy+(Math.max(hL,hR)-L.heightAt(tr.x));  // posé sur le pied le plus bas
+        ctx.save();ctx.globalAlpha=0.92*a;
+        ctx.drawImage(AssetFactory.getTorii(TONE),sx-w/2,gyT-h+h*0.06,w,h);
+        ctx.restore();
+        toriiOk=true;
+      }
+    }
+    if(!toriiOk){
       const h=Hv*(0.52+(s%30)/100);
       blitTree(sx,gy,h,s,TONE,0.9*a,now,tr.kind);
     }
@@ -500,6 +511,10 @@ export function render(playT){
     const BIO_JP={plaine:'野原',ville:'夜の街',foret:'森'};
     const bTo=biomes[biomes.length-1].b;
     fx.card={txt:'PART '+(ROM[secIdx]||secIdx+1)+' ・ '+(BIO_JP[bTo]||bTo),start:now};
+    // éclair pub (eyecatch) : SEULEMENT si aucun trou n'arrive — jamais
+    // au détriment d'un saut à faire
+    if(!nearestGapAhead(rider.x,level.speedAt(rider.x)*1.5))
+      fx.eyecatch={start:now};
   }
   G.lastSecIdx=secIdx;
 
@@ -759,14 +774,16 @@ export function render(playT){
     ctx.quadraticCurveTo(tl*0.55,-3.4+Math.sin(now*0.017+o.x)*1.4,tl,-4.5);
     ctx.quadraticCurveTo(tl*0.45,1.2,0,3.6);
     ctx.closePath();ctx.fill();
-    // yeux : deux points d'encre, clignement périodique
+    // yeux : deux points d'encre qui SUIVENT le rider, clignement périodique
     const blink=((now*0.0004+o.x*0.13)%1)<0.05;
     ctx.fillStyle='#141222';
     if(blink){
       ctx.fillRect(-2.6,-0.9,1.6,0.7);ctx.fillRect(-0.2,-0.9,1.6,0.7);
     }else{
-      ctx.beginPath();ctx.arc(-1.8,-0.6,0.75,0,7);ctx.fill();
-      ctx.beginPath();ctx.arc(0.6,-0.6,0.75,0,7);ctx.fill();
+      const gaze=Math.atan2((rider.y-cam.y)-oy,(rider.x-cam.x)-sx);
+      const ex=Math.cos(gaze)*0.55,ey=Math.sin(gaze)*0.55;
+      ctx.beginPath();ctx.arc(-1.8+ex,-0.6+ey,0.75,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(0.6+ex,-0.6+ey,0.75,0,7);ctx.fill();
     }
     ctx.restore();
   }
@@ -782,6 +799,18 @@ export function render(playT){
     ctx.strokeStyle=`rgba(255,107,74,${1-k})`;
     ctx.lineWidth=2.5*(1-k);
     ctx.beginPath();ctx.arc(r.x-cam.x,r.y-cam.y,8+k*36,0,7);ctx.stroke();
+  }
+
+  // trace de dérapage de fin : poussière claire soulevée le long du sol
+  if(G.ending&&G.ending.skidX1>G.ending.skidX0+4){
+    ctx.strokeStyle='rgba(170,150,165,0.30)';ctx.lineWidth=2.6;ctx.lineCap='round';
+    ctx.beginPath();
+    for(let wx=G.ending.skidX0;wx<=G.ending.skidX1;wx+=6){
+      const y=level.heightAt(wx)-cam.y+9.5;
+      wx===G.ending.skidX0?ctx.moveTo(wx-cam.x,y):ctx.lineTo(wx-cam.x,y);
+    }
+    ctx.lineTo(G.ending.skidX1-cam.x,level.heightAt(G.ending.skidX1)-cam.y+9.5);
+    ctx.stroke();
   }
 
   const sp=rider.scarfPts;
@@ -1008,6 +1037,31 @@ export function render(playT){
   const vg=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*1.05);
   vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.40)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+
+  // Éclair pub (eyecatch) : carte titre d'une demi-seconde, trame en coin
+  if(fx.eyecatch){
+    const age=(now-fx.eyecatch.start)/1000;
+    if(age>0.55)fx.eyecatch=null;
+    else{
+      const aa=Math.max(0,Math.min(1,age/0.10,(0.55-age)/0.16));
+      ctx.save();
+      ctx.globalAlpha=aa;
+      ctx.fillStyle='#0B0A14';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(237,233,242,0.14)';
+      for(let dy2=0;dy2<H*0.38;dy2+=15)
+        for(let dx2=0;dx2<W*0.34-dy2*0.55;dx2+=15){
+          ctx.beginPath();ctx.arc(W-24-dx2,24+dy2,3.4,0,7);ctx.fill();
+        }
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='#EDE9F2';
+      ctx.font='800 36px "Bricolage Grotesque","Hiragino Sans","Yu Gothic",sans-serif';
+      ctx.fillText('ロファイ・ライダー',W/2,H/2-10);
+      ctx.fillStyle='#FF6B4A';
+      ctx.font='700 13px "IBM Plex Mono",monospace';
+      ctx.fillText('L O F I   R I D E R',W/2,H/2+22);
+      ctx.restore();
+    }
+  }
 
   // Carte de section fansub (sous la couche VHS : les scanlines la traversent)
   if(fx.card){

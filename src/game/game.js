@@ -14,7 +14,7 @@ import {Backdrops} from '../render/backdrops.js';
 import {FRAME_SCALE} from '../config/mapping.js';
 import {G} from './state.js';
 import {ensureCtx,play,pause,currentT} from './playback.js';
-import {resetRiderAt,stepPhysics} from './physics.js';
+import {resetRiderAt,stepPhysics,stepEnding} from './physics.js';
 import {resize,stepCamera,render} from './renderer.js';
 import * as ui from './ui.js';
 
@@ -32,6 +32,7 @@ function recenterCam(){
 
 /* ---------- Transport & états ---------- */
 function seek(t){
+  if(G.state==='ending'){G.ending=null;G.state='riding';}   // le dérapage cède au seek
   const was=G.audio.playing;pause();
   G.fx.rewindDir=t<G.audio.offset?'◀◀':'▶▶';   // la cassette se rembobine
   G.fx.rewindT=0.55;
@@ -69,12 +70,19 @@ function backToMenu(){
   pause();G.state='menu';
   ui.showMenu();
 }
+function startEnding(){
+  pause();G.state='ending';
+  const vx=G.level.speedAt(G.rider.x);
+  G.ending={vx,decel:vx/1.15,skidX0:G.rider.x,skidX1:G.rider.x,doneT:0};
+  G.fx.impactWord={txt:'キキーッ',x:G.rider.x,y:G.rider.y-26,t:0};
+}
 function endRide(){
-  pause();G.state='ended';
+  pause();G.state='ended';G.ending=null;
   ui.showEnd();
 }
 function startRide(){
   const r=G.rider;
+  G.ending=null;
   G.audio.offset=0;G.kickIdx=0;G.lastSecIdx=-1;G.fx.glitchT=0;G.orbIdx=0;
   for(const g of G.level.gaps){g.cleared=false;g.missed=false;}
   for(const o of G.level.orbs)o.got=false;
@@ -127,7 +135,15 @@ function loop(now){
     else if(Math.random()<dt*0.22)G.fx.glitchT=0.10;
     if(G.fx.rewindT>0)G.fx.rewindT=Math.max(0,G.fx.rewindT-dt);
     ui.uiFrame(t,dt);
-    if(G.audio.playing&&t>=G.timeline.duration-0.08)endRide();
+    if(G.audio.playing&&t>=G.timeline.duration-0.12)startEnding();
+  }else if(G.state==='ending'&&G.ending){
+    // le morceau est fini : le rider conclut d'un dérapage, puis la carte
+    const t=G.timeline.duration-0.05;
+    stepEnding(dt);
+    stepCamera(dt,t);
+    render(t);
+    if(G.fx.glitchT>0)G.fx.glitchT=Math.max(0,G.fx.glitchT-dt);
+    if(G.ending.doneT>0.65)endRide();
   }
   requestAnimationFrame(loop);
 }

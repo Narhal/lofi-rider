@@ -30,8 +30,20 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
       Essayé puis retiré : mouchetures « pinceau sec » sur la crête (débris
       visibles sur ciel clair). Les bords de pinceau sur sprites cuits restent
       une piste, non concluante à ce stade.
-- [ ] **DA restant (optionnel)** : éclair pub plein écran entre les sections,
-      yokai « réveillés » par le passage du rider (regard qui suit).
+- [x] **Fin de morceau** : dérapage de clôture (state 'ending') — roue arrière
+      bloquée, キキーッ, cabrage qui retombe, trace de poussière au sol,
+      arrêt doux puis carte de fin. Le seek interrompt proprement le dérapage.
+- [x] **Placement naturel des yokai** (generator) : orbe dans la fenêtre de
+      vol d'un trou → posé sur l'arc du saut parfait ; orbe juste devant un
+      trou (saut à contretemps garanti) → supprimé ; ailleurs → hauteur
+      modérée sans risque. Sur le morceau de test : 2 sur arc, 14 sûrs,
+      6 appâts piégés éliminés.
+- [x] **Torii bien assis** : les deux pieds vérifiés (pas de trou, dénivelé
+      ≤ 12px) sinon repli en arbre ; posé sur le pied le plus bas.
+- [x] **Éclair pub** : carte titre plein écran 0,55 s (ロファイ・ライダー,
+      trame en coin) aux changements de section — UNIQUEMENT si aucun trou
+      n'arrive (jamais au détriment d'un saut).
+- [x] **Yokai vivants** : leur regard suit le rider (pupilles décalées).
 
 ## v8 — priorités actées avec N4
 - [x] **Catalogue d'assets enrichi** (render/assets.js) : 6 espèces d'arbres

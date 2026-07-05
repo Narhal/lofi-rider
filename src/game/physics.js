@@ -155,8 +155,13 @@ export function stepPhysics(dt,playT){
     }
   }
   r.squash*=Math.exp(-8*dt);
+  updateSoft(dt);
+}
 
-  // écharpe
+/* Écharpe, particules, anneaux, onomatopées, timers — partagé entre la
+   physique de descente et la séquence de fin */
+function updateSoft(dt){
+  const r=G.rider,fx=G.fx;
   const sp=r.scarfPts;
   const neckX=r.x-Math.cos(r.angle)*2-Math.sin(r.angle)*9;
   const neckY=r.y-9+Math.sin(r.angle)*2;
@@ -177,4 +182,25 @@ export function stepPhysics(dt,playT){
   if(fx.impactFrameT>0)fx.impactFrameT-=dt;
   if(fx.flashT>0)fx.flashT-=dt;
   if(fx.fadeT>0)fx.fadeT-=dt;
+}
+
+/* Dérapage de fin de morceau : roue arrière bloquée, poussière, arrêt doux.
+   L'écharpe retombe d'elle-même quand la vitesse meurt. */
+export function stepEnding(dt){
+  const r=G.rider,L=G.level,fx=G.fx,e=G.ending;
+  e.vx=Math.max(0,e.vx-e.decel*dt);
+  r.x+=e.vx*dt;
+  r.y=L.heightAt(r.x)-10;
+  const sl=Math.atan(L.slopeAt(r.x));
+  r.angle+=(sl-0.15*Math.min(1,e.vx/240)-r.angle)*Math.min(1,dt*8);  // léger cabrage qui retombe
+  r.leanPose+=(-1*Math.min(1,e.vx/180)-r.leanPose)*Math.min(1,dt*8);
+  r.wheelA+=e.vx*dt/40;   // roue quasi bloquée : elle glisse, elle ne roule plus
+  r.crank+=e.vx*dt/90;
+  e.skidX1=r.x;
+  if(e.vx>30&&Math.random()<e.vx*dt*0.06)
+    fx.particles.push({x:r.x-11,y:r.y+11,vx:-e.vx*0.30-30*Math.random(),vy:-25-55*Math.random(),
+      life:0.4+Math.random()*0.45,t:0,col:'rgba(160,140,155,0.45)'});
+  if(e.vx<=0)e.doneT+=dt;
+  r.squash*=Math.exp(-8*dt);
+  updateSoft(dt);
 }

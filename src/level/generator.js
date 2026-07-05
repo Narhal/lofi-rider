@@ -1,4 +1,4 @@
-import {DT,STEP,SPEED_MIN,SPEED_MAX,GRADE_MIN,GRADE_MAX,JUMP_AIRTIME,GAP_FRACTION,GAP_DENSITY} from '../config/mapping.js';
+import {DT,STEP,SPEED_MIN,SPEED_MAX,GRADE_MIN,GRADE_MAX,JUMP_AIRTIME,GAP_FRACTION,GAP_DENSITY,JUMP_V,GRAV_UP,GRAV_DOWN} from '../config/mapping.js';
 
 export /* ================================================================
    LEVEL GENERATOR v5
@@ -140,13 +140,38 @@ function generate(tl,opts){
   const gapNearX=x=>{const k0=Math.floor((x-25)/STEP),k1=Math.ceil((x+25)/STEP);
     for(let k=Math.max(0,k0);k<=k1&&k<nX;k++)if(gapMask[k])return true;return false;};
 
-  /* ---- ORBES sur les leads : attraper la mélodie ---- */
+  /* ---- ORBES sur les leads : attraper la mélodie ----
+     Placement NATUREL — jamais d'appât qui force un saut à contretemps :
+     • orbe dans la fenêtre de vol d'un trou → posé SUR l'arc du saut
+       parfait (l'attraper = franchir le trou au tempo, double récompense)
+     • orbe juste devant un trou (sauter pour lui = tomber dedans) → supprimé
+     • ailleurs → hauteur modérée, attrapable d'un petit saut sans risque */
   const orbs=[];let lastO=-99;
+  const V0=-JUMP_V,tUp=V0/GRAV_UP;                    // apogée du saut
+  const dyApex=JUMP_V*tUp+0.5*GRAV_UP*tUp*tUp;
   for(const t of tl.leads){
     if(t<3||t>dur-2)continue;
     if(t-lastO<0.5)continue;
     const x=xOfT(t);
-    orbs.push({x,y:heightAt(x)-(46+((t*997|0)%44)),got:false});
+    let arc=null,skip=false;
+    for(const gg of gaps){
+      const take=gg.x0-8;
+      const spd=speedOfT(gg.ts),jd=spd*JUMP_AIRTIME;
+      if(take>x){skip=take-x<jd*0.9;break;}
+      if(x<=take+jd){arc={take,spd};break;}
+    }
+    if(skip){lastO=t;continue;}
+    let y;
+    if(arc){
+      const tau=(x-arc.take)/arc.spd;
+      const dy=tau<=tUp
+        ?JUMP_V*tau+0.5*GRAV_UP*tau*tau
+        :dyApex+0.5*GRAV_DOWN*(tau-tUp)*(tau-tUp);
+      y=heightAt(arc.take)-10+dy-12;
+    }else{
+      y=heightAt(x)-(40+((t*997|0)%26));
+    }
+    orbs.push({x,y,got:false});
     lastO=t;
   }
 
