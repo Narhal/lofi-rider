@@ -8,9 +8,10 @@
       PNG par biome (import.meta.glob), parallax lent, ping-pong miroir, crossfade
       entre biomes. Branché dans `render()` : remplace la couche de ciel (soleil/
       étoiles/nuages coupés), garde les couches procédurales par-dessus.
-      Reste à faire : alléger les PNG (5–8 Mo pièce → resize ~2400px / WebP) ;
-      option crossfade quand deux sections voisines du même biome changent de
-      variante (actuellement coupe franche) ; réglage fin du calage vertical.
+      Allégé : 9 scènes resize 2400px + WebP q82 (60,6 Mo → 2,8 Mo).
+      Reste à faire : option crossfade quand deux sections voisines du même
+      biome changent de variante (actuellement coupe franche) ; réglage fin
+      du calage vertical.
 
 ## M5 — le voyage complet
 - [ ] Pause (Échap) + écran de réglages (volume via GainNode, densité de trous

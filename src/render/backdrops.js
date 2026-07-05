@@ -10,7 +10,7 @@
    ================================================================ */
 
 // URLs résolues au build ; ce ne sont que des chaînes (chargement à la demande).
-const found=import.meta.glob('./backdrops/*/*.png',{eager:true,query:'?url',import:'default'});
+const found=import.meta.glob('./backdrops/*/*.{png,webp}',{eager:true,query:'?url',import:'default'});
 
 const byBiome={};
 for(const path in found){
