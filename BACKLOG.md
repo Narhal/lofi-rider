@@ -17,10 +17,15 @@ VHS diégétique (le jeu EST une cassette), esprits du son (orbes → yokai).
       énergie. Le flottement est piloté par vitesse + vol (windA/wob).
 - [ ] **Généralisation encre restante** : bords de pinceau irréguliers sur les
       sprites cuits, onomatopées sur les perfects.
-- [ ] **VHS diégétique** : rembobinage visuel au seek, tracking damage au miss,
-      cartes « éclair pub » aux changements de section, sous-titres fansub.
-- [ ] **Esprits du son** : les orbes deviennent des petits yokai animés,
-      waveform gravée dans le terrain, câbles des poteaux en portées.
+- [x] **VHS diégétique (noyau)** : rembobinage ◀◀ REW / ▶▶ FF au seek (bandes
+      déchirées + label magnétoscope clignotant), tracking damage au miss
+      (barre de bruit qui roule + tranche décalée), cartes de section façon
+      fansub (« PART Ⅱ ・ 夜の街 », jaune canonique sous les scanlines).
+- [x] **Esprits du son (noyau)** : les orbes sont des hitodama — corps-goutte,
+      queue de flamme qui frémit, yeux d'encre qui clignent.
+- [ ] **DA restant** : waveform gravée dans le terrain, câbles des poteaux en
+      portées, bords de pinceau sur les sprites cuits, onomatopée des perfects,
+      éclair pub plein écran optionnel entre les sections.
 
 ## v8 — priorités actées avec N4
 - [x] **Catalogue d'assets enrichi** (render/assets.js) : 6 espèces d'arbres

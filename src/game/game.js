@@ -33,13 +33,15 @@ function recenterCam(){
 /* ---------- Transport & états ---------- */
 function seek(t){
   const was=G.audio.playing;pause();
+  G.fx.rewindDir=t<G.audio.offset?'◀◀':'▶▶';   // la cassette se rembobine
+  G.fx.rewindT=0.55;
   G.audio.offset=Math.max(0,Math.min(G.timeline.duration-0.05,t));
   G.kickIdx=0;G.lastSecIdx=-1;G.fx.glitchT=0.5;G.orbIdx=0;
   Backdrops.snap();
   resetRiderAt(G.audio.offset);
   recenterCam();
   if(was)play();
-  if(G.state==='paused')render(G.audio.offset);   // rafraîchit l'image gelée sous l'overlay
+  if(G.state==='paused'){render(G.audio.offset);ui.uiFrame(G.audio.offset,0);}   // rafraîchit l'image gelée + HUD
 }
 function openPause(){
   if(G.state!=='riding')return;
@@ -123,6 +125,7 @@ function loop(now){
     render(t);
     if(G.fx.glitchT>0)G.fx.glitchT=Math.max(0,G.fx.glitchT-dt);
     else if(Math.random()<dt*0.22)G.fx.glitchT=0.10;
+    if(G.fx.rewindT>0)G.fx.rewindT=Math.max(0,G.fx.rewindT-dt);
     ui.uiFrame(t,dt);
     if(G.audio.playing&&t>=G.timeline.duration-0.08)endRide();
   }

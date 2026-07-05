@@ -466,7 +466,14 @@ export function render(playT){
     const s=timeline.sections[i];
     if(playT>=s.start&&playT<s.end){secIdx=i;break;}
   }
-  if(G.lastSecIdx!==-1&&secIdx!==G.lastSecIdx)fx.glitchT=Math.max(fx.glitchT,0.6);
+  if(G.lastSecIdx!==-1&&secIdx!==G.lastSecIdx){
+    fx.glitchT=Math.max(fx.glitchT,0.6);
+    // carte de section façon fansub (la cassette annonce le chapitre)
+    const ROM=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ','Ⅷ','Ⅸ','Ⅹ','Ⅺ','Ⅻ'];
+    const BIO_JP={plaine:'野原',ville:'夜の街',foret:'森'};
+    const bTo=biomes[biomes.length-1].b;
+    fx.card={txt:'PART '+(ROM[secIdx]||secIdx+1)+' ・ '+(BIO_JP[bTo]||bTo),start:now};
+  }
   G.lastSecIdx=secIdx;
 
   const sky=ctx.createLinearGradient(0,0,0,H);
@@ -684,14 +691,36 @@ export function render(playT){
     ctx.beginPath();ctx.moveTo(sx-4,y-14);ctx.lineTo(sx-4,y-4);ctx.stroke();
   }
 
+  // ORBES → petits esprits du son (hitodama) : corps-goutte, queue de
+  // flamme qui frémit, yeux d'encre qui clignent
   for(const o of level.orbs){
     const sx=o.x-cam.x;
     if(sx<-30||sx>Wv+30||o.got)continue;
     const oy=o.y-cam.y+Math.sin(now*0.004+o.x)*4;
-    const og=ctx.createRadialGradient(sx,oy,0,sx,oy,11);
-    og.addColorStop(0,'rgba(255,224,150,0.85)');og.addColorStop(1,'rgba(255,224,150,0)');
-    ctx.fillStyle=og;ctx.beginPath();ctx.arc(sx,oy,11,0,7);ctx.fill();
-    ctx.fillStyle='rgba(255,240,200,0.95)';ctx.beginPath();ctx.arc(sx,oy,3,0,7);ctx.fill();
+    const og=ctx.createRadialGradient(sx,oy,0,sx,oy,12);
+    og.addColorStop(0,'rgba(255,224,150,0.75)');og.addColorStop(1,'rgba(255,224,150,0)');
+    ctx.fillStyle=og;ctx.beginPath();ctx.arc(sx,oy,12,0,7);ctx.fill();
+    ctx.save();
+    ctx.translate(sx,oy);
+    ctx.rotate(Math.sin(now*0.0025+o.x)*0.14);
+    // corps + queue traînant vers l'arrière-haut
+    const tl=8+Math.sin(now*0.012+o.x)*2.2;
+    ctx.fillStyle='rgba(255,242,206,0.95)';
+    ctx.beginPath();
+    ctx.arc(0,0,3.6,Math.PI*0.42,Math.PI*1.58);
+    ctx.quadraticCurveTo(tl*0.55,-3.4+Math.sin(now*0.017+o.x)*1.4,tl,-4.5);
+    ctx.quadraticCurveTo(tl*0.45,1.2,0,3.6);
+    ctx.closePath();ctx.fill();
+    // yeux : deux points d'encre, clignement périodique
+    const blink=((now*0.0004+o.x*0.13)%1)<0.05;
+    ctx.fillStyle='#141222';
+    if(blink){
+      ctx.fillRect(-2.6,-0.9,1.6,0.7);ctx.fillRect(-0.2,-0.9,1.6,0.7);
+    }else{
+      ctx.beginPath();ctx.arc(-1.8,-0.6,0.75,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(0.6,-0.6,0.75,0,7);ctx.fill();
+    }
+    ctx.restore();
   }
 
   for(const p of fx.particles){
@@ -932,6 +961,25 @@ export function render(playT){
   vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.40)');
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 
+  // Carte de section fansub (sous la couche VHS : les scanlines la traversent)
+  if(fx.card){
+    const age=(now-fx.card.start)/1000;
+    if(age>3)fx.card=null;
+    else{
+      const aIn=Math.min(1,age/0.25),aOut=Math.min(1,(3-age)/0.5);
+      ctx.save();
+      ctx.globalAlpha=aIn*aOut;
+      ctx.font='700 17px "Bricolage Grotesque",sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.lineJoin='round';ctx.lineWidth=4;
+      ctx.strokeStyle='rgba(7,7,11,0.9)';
+      ctx.strokeText(fx.card.txt,W/2,H-58);
+      ctx.fillStyle='#FFE24A';   // jaune fansub canonique
+      ctx.fillText(fx.card.txt,W/2,H-58);
+      ctx.restore();
+    }
+  }
+
   /* === Couche VHS === */
   if(!scanPat)scanPat=ctx.createPattern(scanCv,'repeat');
   ctx.save();
@@ -963,6 +1011,36 @@ export function render(playT){
       ctx.fillStyle=`rgba(225,225,235,${0.14*g2})`;
       ctx.fillRect(0,ty,W,6);
     }
+  }
+
+  // Tracking damage : au miss, la bande se froisse — barre de bruit qui roule
+  if(fx.fadeT>0){
+    const k=fx.fadeT/0.7;
+    const by2=H*(1-k)*0.85;
+    ctx.save();
+    ctx.globalAlpha=0.55*k;
+    ctx.drawImage(noiseCv,0,0,160,26,0,by2,W,22);
+    ctx.restore();
+    try{ctx.drawImage(cv,0,(by2+22)*DPR,W*DPR,30*DPR,(Math.random()*14-7)|0,by2+22,W,30);}catch(err){}
+    ctx.fillStyle=`rgba(237,233,242,${0.10*k})`;
+    ctx.fillRect(0,by2-3,W,2);
+  }
+
+  // Rembobinage diégétique : le seek EST un geste de magnétoscope
+  if(fx.rewindT>0){
+    const k=fx.rewindT/0.55;
+    for(let i=0;i<5;i++){
+      const y=(i/5)*H+((now*0.4)%(H/5));
+      const dx=((i%2?1:-1)*(10+18*k)*(fx.rewindDir==='◀◀'?1:-1))|0;
+      try{ctx.drawImage(cv,0,y*DPR,W*DPR,10*DPR,dx,y,W,10);}catch(err){}
+    }
+    ctx.save();
+    ctx.globalAlpha=Math.min(1,k*2)*(((now*0.008)|0)%2?1:0.55);
+    ctx.font='700 26px "IBM Plex Mono",monospace';
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillStyle='rgba(237,233,242,0.92)';
+    ctx.fillText(fx.rewindDir+' '+(fx.rewindDir==='◀◀'?'REW':'FF'),24,52);
+    ctx.restore();
   }
 
   // Impact frame : négatif plein écran une fraction de seconde (gros impacts)
